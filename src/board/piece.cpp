@@ -337,6 +337,43 @@ std::vector<Position> King::findLegalMoves(Board& board)
         Position(-1, 1),
     };
 
+    int expectY = 0;
+    if (side == PieceSide::white)
+    {
+        expectY = 1;
+    }
+    else
+    {
+        expectY = 7;
+    }
+
+    // correct position
+    if (position.x == 4 &&
+        position.y == expectY)
+    {
+        if ((board.castleWhiteKingside && side) ||
+            (board.castleBlackKingside && !side))
+        {
+            if (board.isSquareFree(Position(5, expectY)) &&
+                board.isSquareFree(Position(6, expectY)) &&
+                board.getPieceAt(Position(7, expectY))->getType() == PieceType::rook)
+            {
+                legalMoves.push_back(position + Position(2, 0));
+            }
+        }
+        if ((board.castleWhiteQueenside && side) ||
+            (board.castleBlackQueenside && !side))
+        {
+            if (board.isSquareFree(Position(3, expectY)) &&
+                board.isSquareFree(Position(2, expectY)) &&
+                board.isSquareFree(Position(1, expectY)) &&
+                board.getPieceAt(Position(0, expectY))->getType() == PieceType::rook)
+            {
+                legalMoves.push_back(position + Position(-2, 0));
+            }
+        }
+    }
+
     for (Position testPos : testPositions)
     {
         // is there a piece ahead?
