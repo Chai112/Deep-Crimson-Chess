@@ -1,3 +1,6 @@
+# SHCR - Shallow Crimson
+# Developed by Chaidhat Chaimongkol on 9 June, 2022
+
 # install anaconda
 # go here https://docs.anaconda.com/anaconda/user-guide/tasks/tensorflow/
 # this is helpful https://machinelearningmastery.com/tutorial-first-neural-network-python-keras/
@@ -84,31 +87,31 @@ def evaluateFenIntoBoard(userFen):
     }
     return board, extraInfo
 
-def createMetaBoard (board, extraInfo):
-    metaBoards = {}
+def flattenBoard (board, extraInfo):
+    flatBoards = {}
 
     for piece in PIECES:
-        metaBoards[piece]=np.empty([8,8], dtype='f')
-        metaBoards[piece].fill(0.0)
+        flatBoards[piece]=np.empty([8,8], dtype='f')
+        flatBoards[piece].fill(0.0)
 
     for y in range(8):
         for x in range(8):
             piece = board[y][x].decode()
             if piece != BLANK_PIECE:
-                metaBoards[piece][y][x] = 1.0
+                flatBoards[piece][y][x] = 1.0
 
-    metaBoard = []
-    metaBoard.append(1 if extraInfo["canWhiteCastleKingside"] else 0)
-    metaBoard.append(1 if extraInfo["canWhiteCastleQueenside"] else 0)
-    metaBoard.append(1 if extraInfo["canBlackCastleKingside"] else 0)
-    metaBoard.append(1 if extraInfo["canBlackCastleQueenside"] else 0)
-    metaBoard.append(1 if extraInfo["halfmoveClock"] else 0)
+    flatBoard = []
+    flatBoard.append(1 if extraInfo["canWhiteCastleKingside"] else 0)
+    flatBoard.append(1 if extraInfo["canWhiteCastleQueenside"] else 0)
+    flatBoard.append(1 if extraInfo["canBlackCastleKingside"] else 0)
+    flatBoard.append(1 if extraInfo["canBlackCastleQueenside"] else 0)
+    flatBoard.append(1 if extraInfo["halfmoveClock"] else 0)
 
     for piece in PIECES:
         for y in range(8):
             for x in range(8):
-                metaBoard.append(metaBoards[piece][y][x])
-    return metaBoard
+                flatBoard.append(flatBoards[piece][y][x])
+    return flatBoard
 
 print("start")
 
@@ -122,5 +125,5 @@ userFen = input()
 print("a")
 board, extraInfo = evaluateFenIntoBoard(userFen)
 displayBoard(board, extraInfo)
-metaBoard = createMetaBoard(board, extraInfo)
-print(metaBoard)
+flatBoard = flattenBoard(board, extraInfo)
+print(flatBoard)
