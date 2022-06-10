@@ -75,23 +75,22 @@ for n in range(0, len(dataset)):
     #displayBoard(board, extraInfo)
     flatBoard = representation.flattenBoard(board, extraInfo)
     flatBoards.append(flatBoard)
-    groundEvaluations.append((max(-10000, min(10000, float(groundEvaluation))) / 20000) + 0.5)
+    groundEvaluations.append((max(-10000, min(10000, float(groundEvaluation))) / 20000) + 0.5) # clamp groundEvaluation to +/-10000 and normalise to 0-1
 
 print("FENs cleaned & flattened at", timer() - starttime)
 print("number of valid flatboards", len(flatBoards))
 
 model = Sequential()
 model.add(Dense(64, input_dim=773, activation='relu'))
-#model.add(Dense(64, activation='relu'))
-#model.add(Dense(16, activation='relu'))
-#model.add(Dense(16, input_dim=773, activation='relu'))
+model.add(Dense(64, activation='relu'))
 model.add(Dense(16, activation='relu'))
+model.add(Dense(16, activation='relu'))
+model.add(Dense(8, activation='relu'))
 model.add(Dense(8, activation='relu'))
 model.add(Dense(4, activation='relu'))
 model.add(Dense(4, activation='relu'))
-#model.add(Dense(8, activation='relu'))
-#model.add(Dense(8, activation='relu'))
-#model.add(Dense(8, activation='relu'))
+model.add(Dense(4, activation='relu'))
+model.add(Dense(4, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 # compile the keras model
 model.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
@@ -108,6 +107,7 @@ while True:
     flatBoard = representation.flattenBoard(board, extraInfo)
     prediction = model.predict([flatBoard])
     print(prediction)
+    print("this is equivalent to being", (prediction[0] -0.5) * 200), "pawns up")
 
 #print("input FEN")
 #userFen = input()
