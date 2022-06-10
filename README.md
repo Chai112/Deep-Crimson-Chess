@@ -84,3 +84,33 @@ test accuracy: 0.576
 dimensions: 64x4 16x4 8x8
 ```
 Performs really badly! It seems to have no concept of who is winning or losing. It seems something is wrong with the code
+
+### Test 6
+Fixed errors with the code. Now trying tanh instead of ReLU and using negative numbers. Blank squares are still 0.0, not -1
+```
+dataset: chessData-verysmall
+time to train: ~1s
+epochs: 50
+final loss: 1.5e-04
+final accuracy: 0.1140
+test loss: 0.0347
+test accuracy: 0.06
+correct side: 35%
+dimensions: 64x2 16x2 8x4
+```
+Not bad. It can evaluate positions of a full board fairly well, although still makes mistakes and doesnt not evaluate the bishop as 3 points, for example.
+
+### Test 7
+Removed the extra info thing as it is not quite useful
+```
+dataset: chessData-verysmall
+time to train: ~1s
+epochs: 50
+final loss: 1.5e-04
+final accuracy: 0.1140
+test loss: 0.0347
+test accuracy: 0.06
+correct side: 35%
+dimensions: 64x2 16x2 8x4
+```
+Appears to work very well in telling what side is which! But this is at a quick glance. For more nuanced positions, it still struggles a bit.
