@@ -67,10 +67,10 @@ def flattenBoard (board, extraInfo):
                 flatBoards[piece][y][x] = 1.0
 
     flatBoard = []
-    flatBoard.append(1 if extraInfo["canWhiteCastleKingside"] else 0)
-    flatBoard.append(1 if extraInfo["canWhiteCastleQueenside"] else 0)
-    flatBoard.append(1 if extraInfo["canBlackCastleKingside"] else 0)
-    flatBoard.append(1 if extraInfo["canBlackCastleQueenside"] else 0)
+    flatBoard.append(1.0 if extraInfo["canWhiteCastleKingside"] else 0.0)
+    flatBoard.append(1.0 if extraInfo["canWhiteCastleQueenside"] else 0.0)
+    flatBoard.append(1.0 if extraInfo["canBlackCastleKingside"] else 0.0)
+    flatBoard.append(1.0 if extraInfo["canBlackCastleQueenside"] else 0.0)
     flatBoard.append(float(extraInfo["halfmoveClock"]))
 
     for piece in PIECES:

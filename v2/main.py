@@ -51,9 +51,9 @@ def displayBoard(board, extraInfo):
 print("start")
 starttime = timer()
 
-TESTING_SIZE = 1000
+TESTING_SIZE = 100
 
-with open('../datasets/chessData-small.csv', newline='') as csvfile:
+with open('../datasets/chessData-verysmall.csv', newline='') as csvfile:
     dataset = list(csv.reader(csvfile))
 dataset = dataset[1:] # remove column names
 print("data loaded at", timer() - starttime)
@@ -61,12 +61,12 @@ print("data loaded at", timer() - starttime)
 flatBoards = []
 groundEvaluations = []
 
-for n in range(0, len(dataset)):
+for n in range(len(dataset)):
     fen = dataset[n][0]
     groundEvaluation = dataset[n][1]
 
     board, extraInfo = representation.evaluateFenIntoBoard(fen)
-    if not groundEvaluation[0].isnumeric():  # if evaluation is mate in...
+    if groundEvaluation[0] == "#":  # if evaluation is mate in...
         if groundEvaluation[1] == "+": # if mate in ... is to black
             groundEvaluation = "10000"
         else:
@@ -77,7 +77,8 @@ for n in range(0, len(dataset)):
     #displayBoard(board, extraInfo)
     flatBoard = representation.flattenBoard(board, extraInfo)
     flatBoards.append(flatBoard)
-    groundEvaluations.append((max(-10000, min(10000, float(groundEvaluation))) / 20000) + 0.5) # clamp groundEvaluation to +/-10000 and normalise to 0-1
+    groundEvaluation2 = max(-1, min(1, float(groundEvaluation) / 10000))
+    groundEvaluations.append(groundEvaluation2) # clamp groundEvaluation to +/-10000 and normalise to 0-1
 
 del dataset
 
@@ -94,43 +95,39 @@ del flatBoards
 del groundEvaluations
 
 model = Sequential()
-model.add(Dense(64, input_dim=773, activation='relu'))
-model.add(Dense(64, activation='relu'))
-model.add(Dense(64, activation='relu'))
-model.add(Dense(64, activation='relu'))
-model.add(Dense(16, activation='relu'))
-model.add(Dense(16, activation='relu'))
-model.add(Dense(16, activation='relu'))
-model.add(Dense(16, activation='relu'))
-model.add(Dense(8, activation='relu'))
-model.add(Dense(8, activation='relu'))
-model.add(Dense(8, activation='relu'))
-model.add(Dense(8, activation='relu'))
-model.add(Dense(8, activation='relu'))
-model.add(Dense(8, activation='relu'))
-model.add(Dense(8, activation='relu'))
-model.add(Dense(8, activation='relu'))
-model.add(Dense(1, activation='relu'))
+model.add(Dense(64, input_dim=773, activation='tanh'))
+model.add(Dense(64, activation='tanh'))
+model.add(Dense(16, activation='tanh'))
+model.add(Dense(16, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
+model.add(Dense(1, activation='tanh'))
 # compile the keras model
 model.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
 # fit the keras model on the dataset
 print("fitting at", timer() - starttime)
-history = model.fit(xTrain, yTrain, epochs=50, batch_size=100, verbose=1)
+history = model.fit(xTrain, yTrain, epochs=50, batch_size=10, verbose=1)
 print(history)
 print("testing at", timer() - starttime)
 testResults = model.evaluate(xTest, yTest, verbose=0)
 print("test results:", testResults)
 
 correct = 0
-for n in range(0, TESTING_SIZE):
+tested = 0
+for n in range(TESTING_SIZE):
     prediction = model.predict([xTest[n]])[0][0]
-    if (yTest[n] > 0.5 and prediction > 0.5) or (yTest[n] <0.5 and prediction < 0.5):
+    if yTest[n] == 0.5:
+        continue
+
+    tested = tested + 1
+    if (yTest[n] > 0 and prediction > 0) or (yTest[n] <0 and prediction < 0):
+        #print("prediction", prediction, "ground", yTest[n], "right", correct)
         correct = correct + 1
-        break
-    if (yTest[n] == 0.5):
-        correct = correct + 1
-        break
-print("correct side:", (correct / TESTING_SIZE) * 100, "%")
+    #else:
+        #print("prediction", prediction, "ground", yTest[n], "wrong")
+print("correct side:", correct, "of", tested, "times (", (correct / tested) * 100, "%)")
 
 while True:
     print("input FEN")
@@ -143,7 +140,7 @@ while True:
     flatBoard = representation.flattenBoard(board, extraInfo)
     prediction = model.predict([flatBoard])
     print(prediction)
-    print("this is equivalent to being", (prediction[0][0] -0.5) * 200, "pawns up")
+    print("this is equivalent to being", (prediction[0][0]) * 100, "pawns up")
 
 #print("input FEN")
 #userFen = input()
