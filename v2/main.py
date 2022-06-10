@@ -22,6 +22,7 @@
 
 
 import numpy as np
+import representation
 # to measure exec time
 from timeit import default_timer as timer   
   
@@ -40,90 +41,11 @@ def displayBoard(board, extraInfo):
     print("enpassant square: ", extraInfo["enpassantSquare"])
     print("halfmove clock: ", extraInfo["halfmoveClock"])
 
-# extra info
-def evaluateFenIntoBoard(userFen):
-    fen = userFen.split()
-
-    canWhiteCastleKingside = False
-    canWhiteCastleQueenside = False
-    canBlackCastleKingside = False
-    canBlackCastleQueenside = False
-    halfmoveClock = 0
-
-    enpassantSquare = "-"
-
-    x = 0;
-    y = 0;
-    fenPosition = fen[0]
-    for idx, char in enumerate(fenPosition):
-        if char.isnumeric():
-            x = x + int(char)
-        elif char == "/":
-            y = y + 1
-            x = 0
-        else:
-            board[y][x] = char
-            x = x + 1
-
-    canWhiteCastleKingside = "K" in fen[2]
-    canWhiteCastleQueenside = "Q" in fen[2]
-    canBlackCastleKingside = "k" in fen[2]
-    canBlackCastleQueenside = "q" in fen[2]
-    halfmoveClock = fen[4]
-
-    whoseMove = fen[1]
-    if (whoseMove == "w"):
-        return # we don't do that here!
-
-    enpassantSquare = fen[3]
-
-    extraInfo = {
-        "canWhiteCastleKingside": canWhiteCastleKingside,
-        "canWhiteCastleQueenside": canWhiteCastleQueenside,
-        "canBlackCastleKingside": canBlackCastleKingside,
-        "canBlackCastleQueenside": canBlackCastleQueenside,
-        "enpassantSquare": enpassantSquare,
-        "halfmoveClock": halfmoveClock
-    }
-    return board, extraInfo
-
-def flattenBoard (board, extraInfo):
-    flatBoards = {}
-
-    for piece in PIECES:
-        flatBoards[piece]=np.empty([8,8], dtype='f')
-        flatBoards[piece].fill(0.0)
-
-    for y in range(8):
-        for x in range(8):
-            piece = board[y][x].decode()
-            if piece != BLANK_PIECE:
-                flatBoards[piece][y][x] = 1.0
-
-    flatBoard = []
-    flatBoard.append(1 if extraInfo["canWhiteCastleKingside"] else 0)
-    flatBoard.append(1 if extraInfo["canWhiteCastleQueenside"] else 0)
-    flatBoard.append(1 if extraInfo["canBlackCastleKingside"] else 0)
-    flatBoard.append(1 if extraInfo["canBlackCastleQueenside"] else 0)
-    flatBoard.append(1 if extraInfo["halfmoveClock"] else 0)
-
-    for piece in PIECES:
-        for y in range(8):
-            for x in range(8):
-                flatBoard.append(flatBoards[piece][y][x])
-    return flatBoard
-
 print("start")
-
-BLANK_PIECE = "."
-PIECES = "PNBRQKpnbrqk"
-board =np.empty([8,8], dtype='S')
-board.fill(BLANK_PIECE)
 
 print("input FEN")
 userFen = input()
-print("a")
-board, extraInfo = evaluateFenIntoBoard(userFen)
+board, extraInfo = representation.evaluateFenIntoBoard(userFen)
 displayBoard(board, extraInfo)
-flatBoard = flattenBoard(board, extraInfo)
+flatBoard = representation.flattenBoard(board, extraInfo)
 print(flatBoard)
