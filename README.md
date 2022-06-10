@@ -28,7 +28,7 @@ Deep Q-Learning and stuff - looks hard!
 See https://www.youtube.com/watch?v=gWNeMs1Fb8I&list=PLXO45tsB95cIplu-fLMpUEEZTwrDNh6Ba&index=4
 
 # Development Logs
-### Commit 20: 
+### Test #1: Commit 20
 ```
 dataset: chessData-endgame 
 time to train: ~10s
@@ -39,9 +39,9 @@ dimensions: 64x2 16x2 8x2 4x4
 ```
 using concept 2, training for 50 epochs using a rather larger NN, it can start to tell the difference between who is winning. If a white pawn is very far up the rank, it gives a favourable chance to white of winning (around 0.74, equivalent to 48 pawns up). However sometimes it does not give equal piece advantages. For example, if black a lot of pawns and knights whereas white does not, it only gives a advantage to black (like around 0.43 (-14 pawns)). Obviously, it is exagerrating the numbers of pawns, but it may be the result of stockfish giving very exagerrated evaluations during endgames (bad data) and also when it is "mate in", it awards 1.0 (100 pawns up). It may be a better idea to use sigmoid instead.
 
-Adding too many neurons causes the loss to stick at 0.175 and move very slowly
+Adding too many neurons causes the loss to stick at 0.175 and move very slowly (no! This is probably because it converged prematurely due to a bad initial condition. Other tests work well.)
 
-### Commit 21:
+### Test #2
 
 The same as the previous one but with altered dimensions
 ```
@@ -53,3 +53,32 @@ final accuracy: 0.0341
 dimensions: 64x2 16x4
 ```
 This one proved to be somewhat the same as the old one, expect with a lower loss value (better). It can obviously tell which side is winning based on material. However, it cannot really accurately tell which side is winning by how much. For example, if white has a queen and black has only the king, it says it could be around 4 pawns up but if the black king moves around the board on the black side, its evaluation still says that white is ahead, but the value shifts by a lot. If black has a really obvious amount of material up, especially with rooks or queens, it will say that black is winning and vice versa and will state it is winning by quite a margin. Did not test the pawn rank thing, but will be interesting to try.
+
+### Test #3
+The same as the previous one, but using sigmoid instead of reLU
+Loss converges slower than with a ReLU but not by a significant amount. Seems to have no immediate benefit and probably not worth it. I changed it back to ReLU and even the final layer of the output should be a ReLU instead of a sigmoid. Hopefully this makes the final evaluation less extreme.
+
+### Test 4
+Different dimensions to Test 3
+```
+dataset: chessData-endgame 
+time to train: ~10s
+epochs: 50
+final loss: ~4.2e-04
+final accuracy: 0.0341
+dimensions: 64x2 16x2 6x8
+```
+
+It does not recognise the pawn being high up the rank unlike the previous ones. By being up in material, it can sense that it is winning or losing but again, it does not really mind about material. Maybe the positions in the dataset are not random enough? Then again, it is hard to tell whether it is better or worse than the previous models.
+
+### Test 5
+Different dimensions to Test 4
+```
+dataset: chessData-endgame 
+time to train: ~12s
+epochs: 50
+final loss: 4.8e-04
+final accuracy: 0.0341
+dimensions: 64x4 16x4 8x8
+```
+Pretty good
