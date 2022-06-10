@@ -22,6 +22,13 @@
 
 
 import numpy as np
+import csv
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow import keras
+import tensorflow.keras.callbacks as carl
+import time
+
 import representation
 # to measure exec time
 from timeit import default_timer as timer   
@@ -42,10 +49,69 @@ def displayBoard(board, extraInfo):
     print("halfmove clock: ", extraInfo["halfmoveClock"])
 
 print("start")
+starttime = timer()
 
-print("input FEN")
-userFen = input()
-board, extraInfo = representation.evaluateFenIntoBoard(userFen)
-displayBoard(board, extraInfo)
-flatBoard = representation.flattenBoard(board, extraInfo)
-print(flatBoard)
+with open('../datasets/chessData-endgame.csv', newline='') as csvfile:
+    dataset = list(csv.reader(csvfile))
+dataset = dataset[1:] # remove column names
+print("data loaded at", timer() - starttime)
+
+flatBoards = []
+groundEvaluations = []
+
+for n in range(0, len(dataset)):
+    fen = dataset[n][0]
+    groundEvaluation = dataset[n][1]
+
+    board, extraInfo = representation.evaluateFenIntoBoard(fen)
+    if groundEvaluation[0] == "#":  # if evaluation is mate in...
+        if groundEvaluation[1] == "+": # if mate in ... is to black
+            groundEvaluation = "10000"
+        else:
+            groundEvaluation = "-10000"
+    if extraInfo == {}: # invalid FEN
+        continue
+    #print("evaluation: ", groundEvaluation)
+    #displayBoard(board, extraInfo)
+    flatBoard = representation.flattenBoard(board, extraInfo)
+    flatBoards.append(flatBoard)
+    groundEvaluations.append((max(-10000, min(10000, float(groundEvaluation))) / 20000) + 0.5)
+
+print("FENs cleaned & flattened at", timer() - starttime)
+print("number of valid flatboards", len(flatBoards))
+
+model = Sequential()
+model.add(Dense(64, input_dim=773, activation='relu'))
+#model.add(Dense(64, activation='relu'))
+#model.add(Dense(16, activation='relu'))
+#model.add(Dense(16, input_dim=773, activation='relu'))
+model.add(Dense(16, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(4, activation='relu'))
+model.add(Dense(4, activation='relu'))
+#model.add(Dense(8, activation='relu'))
+#model.add(Dense(8, activation='relu'))
+#model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
+# compile the keras model
+model.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
+# fit the keras model on the dataset
+print("start fit at", timer() - starttime)
+history = model.fit(flatBoards, groundEvaluations, epochs=50, batch_size=10, verbose=1)
+print(history)
+
+while True:
+    print("input FEN")
+    userFen = input()
+    board, extraInfo = representation.evaluateFenIntoBoard(userFen)
+    #displayBoard(board, extraInfo)
+    flatBoard = representation.flattenBoard(board, extraInfo)
+    prediction = model.predict([flatBoard])
+    print(prediction)
+
+#print("input FEN")
+#userFen = input()
+#board, extraInfo = representation.evaluateFenIntoBoard(userFen)
+#displayBoard(board, extraInfo)
+#flatBoard = representation.flattenBoard(board, extraInfo)
+#print(flatBoard)

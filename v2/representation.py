@@ -39,7 +39,7 @@ def evaluateFenIntoBoard(userFen):
 
     whoseMove = fen[1]
     if (whoseMove == "w"):
-        return # we don't do that here!
+        return [], {} # we don't do that here!
 
     enpassantSquare = fen[3]
 
@@ -71,10 +71,10 @@ def flattenBoard (board, extraInfo):
     flatBoard.append(1 if extraInfo["canWhiteCastleQueenside"] else 0)
     flatBoard.append(1 if extraInfo["canBlackCastleKingside"] else 0)
     flatBoard.append(1 if extraInfo["canBlackCastleQueenside"] else 0)
-    flatBoard.append(1 if extraInfo["halfmoveClock"] else 0)
+    flatBoard.append(float(extraInfo["halfmoveClock"]))
 
     for piece in PIECES:
         for y in range(8):
             for x in range(8):
-                flatBoard.append(flatBoards[piece][y][x])
+                flatBoard.append(float(flatBoards[piece][y][x]))
     return flatBoard
