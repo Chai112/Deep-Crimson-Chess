@@ -51,7 +51,9 @@ def displayBoard(board, extraInfo):
 print("start")
 starttime = timer()
 
-with open('../datasets/chessData-endgame.csv', newline='') as csvfile:
+TESTING_SIZE = 1000
+
+with open('../datasets/chessData-small.csv', newline='') as csvfile:
     dataset = list(csv.reader(csvfile))
 dataset = dataset[1:] # remove column names
 print("data loaded at", timer() - starttime)
@@ -64,7 +66,7 @@ for n in range(0, len(dataset)):
     groundEvaluation = dataset[n][1]
 
     board, extraInfo = representation.evaluateFenIntoBoard(fen)
-    if groundEvaluation[0] == "#":  # if evaluation is mate in...
+    if not groundEvaluation[0].isnumeric():  # if evaluation is mate in...
         if groundEvaluation[1] == "+": # if mate in ... is to black
             groundEvaluation = "10000"
         else:
@@ -77,25 +79,58 @@ for n in range(0, len(dataset)):
     flatBoards.append(flatBoard)
     groundEvaluations.append((max(-10000, min(10000, float(groundEvaluation))) / 20000) + 0.5) # clamp groundEvaluation to +/-10000 and normalise to 0-1
 
+del dataset
+
+xTrain = flatBoards[:-TESTING_SIZE]
+yTrain = groundEvaluations[:-TESTING_SIZE]
+
+xTest = flatBoards[-TESTING_SIZE:]
+yTest = groundEvaluations[-TESTING_SIZE:]
+
 print("FENs cleaned & flattened at", timer() - starttime)
 print("number of valid flatboards", len(flatBoards))
 
+del flatBoards
+del groundEvaluations
+
 model = Sequential()
-model.add(Dense(64, input_dim=773, activation='sigmoid'))
-model.add(Dense(64, activation='sigmoid'))
-model.add(Dense(16, activation='sigmoid'))
-model.add(Dense(16, activation='sigmoid'))
-model.add(Dense(16, activation='sigmoid'))
-model.add(Dense(16, activation='sigmoid'))
-model.add(Dense(8, activation='sigmoid'))
-model.add(Dense(8, activation='sigmoid'))
-model.add(Dense(1, activation='sigmoid'))
+model.add(Dense(64, input_dim=773, activation='relu'))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(64, activation='relu'))
+model.add(Dense(16, activation='relu'))
+model.add(Dense(16, activation='relu'))
+model.add(Dense(16, activation='relu'))
+model.add(Dense(16, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(8, activation='relu'))
+model.add(Dense(1, activation='relu'))
 # compile the keras model
 model.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
 # fit the keras model on the dataset
-print("start fit at", timer() - starttime)
-history = model.fit(flatBoards, groundEvaluations, epochs=50, batch_size=10, verbose=1)
+print("fitting at", timer() - starttime)
+history = model.fit(xTrain, yTrain, epochs=50, batch_size=100, verbose=1)
 print(history)
+print("testing at", timer() - starttime)
+testResults = model.evaluate(xTest, yTest, verbose=0)
+print("test results:", testResults)
+
+correct = 0
+for n in range(0, TESTING_SIZE):
+    prediction = model.predict([xTest[n]])[0][0]
+    if (yTest[n] > 0.5 and prediction > 0.5) or (yTest[n] <0.5 and prediction < 0.5):
+        correct = correct + 1
+        break
+    if (yTest[n] == 0.5):
+        correct = correct + 1
+        break
+print("correct side:", (correct / TESTING_SIZE) * 100, "%")
 
 while True:
     print("input FEN")

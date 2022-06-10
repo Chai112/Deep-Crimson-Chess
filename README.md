@@ -72,13 +72,15 @@ dimensions: 64x2 16x2 6x8
 It does not recognise the pawn being high up the rank unlike the previous ones. By being up in material, it can sense that it is winning or losing but again, it does not really mind about material. Maybe the positions in the dataset are not random enough? Then again, it is hard to tell whether it is better or worse than the previous models.
 
 ### Test 5
-Different dimensions to Test 4
+Changed Batch size to 100 and many new things
 ```
-dataset: chessData-endgame 
-time to train: ~12s
+dataset: chessData-small
+time to train: ~18s
 epochs: 50
-final loss: 4.8e-04
-final accuracy: 0.0341
+final loss: 0.0167
+final accuracy: 0.433
+test loss: 0.082
+test accuracy: 0.576
 dimensions: 64x4 16x4 8x8
 ```
-Pretty good
+Performs really badly! It seems to have no concept of who is winning or losing. It seems something is wrong with the code
