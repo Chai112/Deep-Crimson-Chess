@@ -106,11 +106,11 @@ Removed the extra info thing as it is not quite useful
 dataset: chessData-verysmall
 time to train: ~1s
 epochs: 50
-final loss: 1.5e-04
-final accuracy: 0.1140
-test loss: 0.0347
+final loss: 7.22e-05
+final accuracy: 0.114
+test loss: 0.043
 test accuracy: 0.06
-correct side: 35%
+correct side: 70%
 dimensions: 64x2 16x2 8x4
 ```
 Appears to work very well in telling what side is which! But this is at a quick glance. For more nuanced positions, it still struggles a bit.

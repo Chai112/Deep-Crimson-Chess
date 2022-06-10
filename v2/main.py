@@ -95,14 +95,14 @@ del flatBoards
 del groundEvaluations
 
 model = Sequential()
-model.add(Dense(64, input_dim=773, activation='tanh'))
+model.add(Dense(64, input_dim=768, activation='tanh'))
 model.add(Dense(64, activation='tanh'))
 model.add(Dense(16, activation='tanh'))
 model.add(Dense(16, activation='tanh'))
-model.add(Dense(8, activation='tanh'))
-model.add(Dense(8, activation='tanh'))
-model.add(Dense(8, activation='tanh'))
-model.add(Dense(8, activation='tanh'))
+model.add(Dense(16, activation='tanh'))
+model.add(Dense(16, activation='tanh'))
+model.add(Dense(4, activation='tanh'))
+model.add(Dense(4, activation='tanh'))
 model.add(Dense(1, activation='tanh'))
 # compile the keras model
 model.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
