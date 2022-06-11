@@ -50,10 +50,40 @@ def displayBoard(board, extraInfo):
 
 print("start")
 starttime = timer()
+# Create a new model instance
+model = Sequential()
+model.add(Dense(64, input_dim=768, activation='tanh'))
+model.add(Dense(64, activation='tanh'))
+model.add(Dense(16, activation='tanh'))
+model.add(Dense(16, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
+model.add(Dense(1, activation='tanh'))
+# compile the keras model
+model.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
 
-TESTING_SIZE = 100
+# Load the previously saved weights
+model.load_weights("./checkpoints/cp-0194.ckpt")
 
-with open('../datasets/chessData-verysmall.csv', newline='') as csvfile:
+# Re-evaluate the model
+while True:
+    print("input FEN")
+    userFen = input()
+    board, extraInfo = representation.evaluateFenIntoBoard(userFen)
+    if extraInfo == {}:
+        print("make sure it is black to move")
+        continue
+    displayBoard(board, extraInfo)
+    flatBoard = representation.flattenBoard(board, extraInfo)
+    prediction = model.predict([flatBoard])
+    print(prediction)
+    print("this is equivalent to being", (prediction[0][0]) * 100, "pawns up")
+
+TESTING_SIZE = 1000
+
+with open('../datasets/chessData-small.csv', newline='') as csvfile:
     dataset = list(csv.reader(csvfile))
 dataset = dataset[1:] # remove column names
 print("data loaded at", timer() - starttime)
@@ -99,20 +129,31 @@ model.add(Dense(64, input_dim=768, activation='tanh'))
 model.add(Dense(64, activation='tanh'))
 model.add(Dense(16, activation='tanh'))
 model.add(Dense(16, activation='tanh'))
-model.add(Dense(16, activation='tanh'))
-model.add(Dense(16, activation='tanh'))
-model.add(Dense(4, activation='tanh'))
-model.add(Dense(4, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
+model.add(Dense(8, activation='tanh'))
 model.add(Dense(1, activation='tanh'))
 # compile the keras model
 model.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
+
+BATCH_SIZE = 100
+# Create a callback that saves the model's weights every 5 epochs
+cp_callback = keras.callbacks.ModelCheckpoint(
+    filepath="./checkpoints/cp-{epoch:04d}.ckpt", 
+    verbose=1, 
+    save_weights_only=True,
+    save_freq=500*BATCH_SIZE)
+
 # fit the keras model on the dataset
 print("fitting at", timer() - starttime)
-history = model.fit(xTrain, yTrain, epochs=50, batch_size=10, verbose=1)
-print(history)
+model.fit(xTrain, yTrain, epochs=1000, batch_size=BATCH_SIZE, callbacks=[cp_callback], verbose=1)
+
 print("testing at", timer() - starttime)
 testResults = model.evaluate(xTest, yTest, verbose=0)
 print("test results:", testResults)
+# Save the weights
+model.save_weights('./checkpoints/my_checkpoint_FINAL')
 
 correct = 0
 tested = 0
@@ -136,7 +177,7 @@ while True:
     if extraInfo == {}:
         print("make sure it is black to move")
         continue
-    #displayBoard(board, extraInfo)
+    displayBoard(board, extraInfo)
     flatBoard = representation.flattenBoard(board, extraInfo)
     prediction = model.predict([flatBoard])
     print(prediction)
