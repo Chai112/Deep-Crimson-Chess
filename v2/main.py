@@ -64,23 +64,6 @@ model.add(Dense(1, activation='tanh'))
 # compile the keras model
 model.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
 
-# Load the previously saved weights
-model.load_weights("./checkpoints/cp-0194.ckpt")
-
-# Re-evaluate the model
-while True:
-    print("input FEN")
-    userFen = input()
-    board, extraInfo = representation.evaluateFenIntoBoard(userFen)
-    if extraInfo == {}:
-        print("make sure it is black to move")
-        continue
-    displayBoard(board, extraInfo)
-    flatBoard = representation.flattenBoard(board, extraInfo)
-    prediction = model.predict([flatBoard])
-    print(prediction)
-    print("this is equivalent to being", (prediction[0][0]) * 100, "pawns up")
-
 TESTING_SIZE = 1000
 
 with open('../datasets/chessData-small.csv', newline='') as csvfile:
@@ -153,7 +136,7 @@ print("testing at", timer() - starttime)
 testResults = model.evaluate(xTest, yTest, verbose=0)
 print("test results:", testResults)
 # Save the weights
-model.save_weights('./checkpoints/my_checkpoint_FINAL')
+model.save_weights('./checkpoints/my_checkpoint_FINAL.ckpt')
 
 correct = 0
 tested = 0
