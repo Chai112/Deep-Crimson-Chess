@@ -16,7 +16,20 @@ Using dataset 2, train a classical NN to look at multiple positions and stockfis
 Once it is trained, then do monte carlo search of low depth to figure out the best move to improve position.
 Optimally, train for only moving as black or white.
 
-### Concept 2.2: Position Features
+### Concept 2.0.1: Evaluate Both Sides
+Using concept 2.0, the system would only evaluate one side (black to move). This is bad when trying to see which moves in evaluating moves of the engine as it would be white to move afterwards. Need to to train a different AI to understand white to move. Or to make it fairer, accept both white AND black in training data. Or when evaluating, perform both steps and then consult engine (depth 2) instead of comapring the best move for black.
+
+### Concept 2.1: Position Features Crosses
+Create some feature crosses inorder to inform the NN some important things (how many pieces are left, position of pieces, ranks open, pieces being attacked/defended, etc)
+Possibly have two NNs, one bigger one which takes in the evaluation of the smaller NN, which evaluates positions
+
+* value of pieces on the board 1 (to give piece-based evaluations)
+* number of pieces on the board 1 (to identify whether game is endgame etc)
+* number of defenders/attackers on each square 8x8 (to maximize attack/defense)
+* positional evaluation of second NN 1 (optional)
+
+### Concept 2.2: Evaluate Positions via use a CNN
+Chuck it in a CNN and hopefully it works. A test CNN project would be nice to start with just to check it works for other datasets.
 
 
 ## Concept 3: Evaluate Best Next Move
@@ -146,4 +159,4 @@ test accuracy: 0.127
 correct side: 54.2%
 dimesnions: 64x2 16x2 8x4
 ```
-again, very cool. However, in the opening it cannot precisely determine who is winning.
+again, very cool. However, in the opening it cannot precisely determine who is winning. I am starting to realise that in context, the absolute evaluations do not mean a lot. Actually, the relative evaluation between moves determine which move is best to be played (black is trying to minimize the evaluation) so the lowest number should be the best next move: this means the absolute evaluation accuracy is not as relevant. The engine struggles to identify moves which results in the immediate taking of the piece (it says a good move is black bishop infront of a white pawn) Additionally, proposed concept 2.0.1 and 2.2.
