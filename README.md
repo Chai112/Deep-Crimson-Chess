@@ -22,30 +22,38 @@ Using concept 2.0, the system would only evaluate one side (black to move). This
 ### Concept 2.1: Position Features
 Create some feature inorder to inform the NN some important things
 
-* `pawns (8x8)` - flattened FEN of pawns (1 white pawn, -1 black pawn, 0 no pawns)
-* `activity_of_pieces_white (8x8)` - number of available legal white move squares
-* `activity_of_pieces_black (8x8)` - number of available legal black move squares
-* `activity_of_pieces_white_sum (1)` - sum of above
-* `activity_of_pieces_black_sum (1)` - sum of above
-* `pawns_remaining (1)` - number of pawns on the board
-* `knights_remaining (1)` - number of knights on the board
-* `bishops_remaining (1)` - number of bishops on the board
-* `queens_remaining (1)` - number of queens on the board
-* `defense (1)` - value of white/black pieces are being defended by other white/black pieces
-* `pressure (1)` - value of pieces white/black are attacking (ignoring pieces blocking other pieces)
-* `attack (1)` - value of white/black pieces are attacking black/white pieces
-* `is_white_castled (1)`
-* `is_black_castled (1)`
+* `activity_white (8x8)` - number of available legal white move squares
+* `activity_black (8x8)` - number of available legal black move squares
+* `activity_white_sum (1)` - sum of above
+* `activity_black_sum (1)` - sum of above
+* `defense_white (1)` - value of white/black pieces are being defended by other white/black pieces
+* `pressure_white (1)` - value of pieces white/black are attacking, ignoring pieces blocking other pieces
+* `attack_white (1)` - value of white/black pieces are legally attacking black/white pieces
+* `defense_black (1)` - value of white/black pieces are being defended by other white/black pieces
+* `pressure_black (1)` - value of pieces white/black are attacking, ignoring pieces blocking other pieces
+* `attack_black (1)` - value of white/black pieces are legally attacking black/white pieces
+* `pawns_remaining (1)` - number of pawns on the board (1 is {9 white, 0 black}, -1 is {0 white, 9 black})
+* `knights_remaining (1)` - number of knights on the board (1 is {2 white, 0 black}, -1 is {0 white, 2 black})
+* `bishops_remaining (1)` - number of bishops on the board (1 is {2 white, 0 black}, -1 is {0 white, 2 black})
+* `queens_remaining (1)` - number of queens on the board (1 is {1 white, 0 black}, -1 is {0 white, 1 black})
+* `is_white_castled (1)` - determine safety of opposite side
+* `is_black_castled (1)` - encourage castling
 * `white_check (1)` - is white in check right now?
 * `black_check (1)` - is black in check right now?
+
+17 + 8*8*2 = 145 features
 
 Possibly have two NNs, one bigger one which takes in the evaluation of the smaller NN, which evaluates positions
 
 * all of the feature crosses above and
 * positional evaluation of second NN 1 (optional)
 
+
 ### Concept 2.2: Evaluate Positions via use a CNN
 Chuck it in a CNN and hopefully it works. A test CNN project would be nice to start with just to check it works for other datasets.
+
+### Concept 2.1.1:
+Instead of one-hot encoding features as one grid for each piece and colour, encode them as 0 - no piece, -1 black, 1 white. Do not do this for the pawns though as their attack is one-facing: instead, make sure that they are two different grids. This reduces the matrix down to 8*8*(6+ 1) = 448 instead of 8*8*12 = 768 (58% of original) and also logically makes sense as the severity of positions should be around the same.
 
 
 ## Concept 3: Evaluate Best Next Move
