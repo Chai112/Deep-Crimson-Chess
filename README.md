@@ -117,3 +117,33 @@ correct side: 70%
 dimensions: 64x2 16x2 8x4
 ```
 Appears to work very well in telling what side is which! But this is at a quick glance. For more nuanced positions, it still struggles a bit.
+
+### Test 8
+Ran with small dataset overnight. It stopped prematurely. The settings were lost so a lot of the values are unknown.
+```
+dataset: chessData-small
+time to train: ?
+epochs: 194 
+final loss: ? (estimated around 0.0001)
+final accuracy: ?
+test loss: ?
+test accuracy: ?
+correct side: ?
+dimensions: 64x2 16x2 8x4
+```
+very cool! Works fairly well with everything. Can analyze endgames and normal games but at some points it cannot state how much white or black is winning by in the endgame.
+
+### Test 8 Bravo
+Ran with small dataset overnight.
+```
+dataset: chessData-small
+time to train: 21802s (6hrs, 3min)
+epochs: 1000
+final loss: 5.419e-04
+final accuracy: 0.1283
+test loss: 0.013952
+test accuracy: 0.127
+correct side: 54.2%
+dimesnions: 64x2 16x2 8x4
+```
+again, very cool. However, in the opening it cannot precisely determine who is winning.
