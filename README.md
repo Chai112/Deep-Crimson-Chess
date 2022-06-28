@@ -19,13 +19,29 @@ Optimally, train for only moving as black or white.
 ### Concept 2.0.1: Evaluate Both Sides
 Using concept 2.0, the system would only evaluate one side (black to move). This is bad when trying to see which moves in evaluating moves of the engine as it would be white to move afterwards. Need to to train a different AI to understand white to move. Or to make it fairer, accept both white AND black in training data. Or when evaluating, perform both steps and then consult engine (depth 2) instead of comapring the best move for black.
 
-### Concept 2.1: Position Features Crosses
-Create some feature crosses inorder to inform the NN some important things (how many pieces are left, position of pieces, ranks open, pieces being attacked/defended, etc)
+### Concept 2.1: Position Features
+Create some feature inorder to inform the NN some important things
+
+* `pawns (8x8)` - flattened FEN of pawns (1 white pawn, -1 black pawn, 0 no pawns)
+* `activity_of_pieces_white (8x8)` - number of available legal white move squares
+* `activity_of_pieces_black (8x8)` - number of available legal black move squares
+* `activity_of_pieces_white_sum (1)` - sum of above
+* `activity_of_pieces_black_sum (1)` - sum of above
+* `pawns_remaining (1)` - number of pawns on the board
+* `knights_remaining (1)` - number of knights on the board
+* `bishops_remaining (1)` - number of bishops on the board
+* `queens_remaining (1)` - number of queens on the board
+* `defense (1)` - value of white/black pieces are being defended by other white/black pieces
+* `pressure (1)` - value of pieces white/black are attacking (ignoring pieces blocking other pieces)
+* `attack (1)` - value of white/black pieces are attacking black/white pieces
+* `is_white_castled (1)`
+* `is_black_castled (1)`
+* `white_check (1)` - is white in check right now?
+* `black_check (1)` - is black in check right now?
+
 Possibly have two NNs, one bigger one which takes in the evaluation of the smaller NN, which evaluates positions
 
-* value of pieces on the board 1 (to give piece-based evaluations)
-* number of pieces on the board 1 (to identify whether game is endgame etc)
-* number of defenders/attackers on each square 8x8 (to maximize attack/defense)
+* all of the feature crosses above and
 * positional evaluation of second NN 1 (optional)
 
 ### Concept 2.2: Evaluate Positions via use a CNN
