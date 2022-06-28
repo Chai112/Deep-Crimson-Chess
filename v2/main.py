@@ -66,7 +66,7 @@ model.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
 
 TESTING_SIZE = 1000
 
-with open('../datasets/chessData-small.csv', newline='') as csvfile:
+with open('../datasets/chessData-verysmall.csv', newline='') as csvfile:
     dataset = list(csv.reader(csvfile))
 dataset = dataset[1:] # remove column names
 print("data loaded at", timer() - starttime)
@@ -81,16 +81,16 @@ for n in range(len(dataset)):
     board, extraInfo = representation.evaluateFenIntoBoard(fen)
     if groundEvaluation[0] == "#":  # if evaluation is mate in...
         if groundEvaluation[1] == "+": # if mate in ... is to black
-            groundEvaluation = "10000"
+            groundEvaluation = "1000"
         else:
-            groundEvaluation = "-10000"
+            groundEvaluation = "-1000"
     if extraInfo == {}: # invalid FEN
         continue
     #print("evaluation: ", groundEvaluation)
     #displayBoard(board, extraInfo)
     flatBoard = representation.flattenBoard(board, extraInfo)
     flatBoards.append(flatBoard)
-    groundEvaluation2 = max(-1, min(1, float(groundEvaluation) / 10000))
+    groundEvaluation2 = max(-1, min(1, float(groundEvaluation) / 1000))
     groundEvaluations.append(groundEvaluation2) # clamp groundEvaluation to +/-10000 and normalise to 0-1
 
 del dataset
@@ -130,13 +130,13 @@ cp_callback = keras.callbacks.ModelCheckpoint(
 
 # fit the keras model on the dataset
 print("fitting at", timer() - starttime)
-model.fit(xTrain, yTrain, epochs=1000, batch_size=BATCH_SIZE, callbacks=[cp_callback], verbose=1)
+model.fit(xTrain, yTrain, epochs=100, batch_size=BATCH_SIZE, callbacks=[cp_callback], verbose=1)
 
 print("testing at", timer() - starttime)
 testResults = model.evaluate(xTest, yTest, verbose=0)
 print("test results:", testResults)
 # Save the weights
-model.save_weights('./checkpoints/my_checkpoint_FINAL.ckpt')
+#model.save_weights('./checkpoints/my_checkpoint_FINAL.ckpt')
 
 correct = 0
 tested = 0
@@ -164,7 +164,7 @@ while True:
     flatBoard = representation.flattenBoard(board, extraInfo)
     prediction = model.predict([flatBoard])
     print(prediction)
-    print("this is equivalent to being", (prediction[0][0]) * 100, "pawns up")
+    print("this is equivalent to being", (prediction[0][0]) * 10, "pawns up")
 
 #print("input FEN")
 #userFen = input()
