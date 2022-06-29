@@ -47,26 +47,14 @@ def displayBoard(board, extraInfo):
     print("can black castle queenside? ", extraInfo["canBlackCastleQueenside"])
     print("enpassant square: ", extraInfo["enpassantSquare"])
     print("halfmove clock: ", extraInfo["halfmoveClock"])
+    print("material: ", extraInfo["material"])
 
 print("start")
 starttime = timer()
-# Create a new model instance
-model = Sequential()
-model.add(Dense(64, input_dim=768, activation='tanh'))
-model.add(Dense(64, activation='tanh'))
-model.add(Dense(16, activation='tanh'))
-model.add(Dense(16, activation='tanh'))
-model.add(Dense(8, activation='tanh'))
-model.add(Dense(8, activation='tanh'))
-model.add(Dense(8, activation='tanh'))
-model.add(Dense(8, activation='tanh'))
-model.add(Dense(1, activation='tanh'))
-# compile the keras model
-model.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
 
 TESTING_SIZE = 1000
 
-with open('../datasets/chessData-verysmall.csv', newline='') as csvfile:
+with open('../datasets/chessData-small.csv', newline='') as csvfile:
     dataset = list(csv.reader(csvfile))
 dataset = dataset[1:] # remove column names
 print("data loaded at", timer() - starttime)
@@ -81,17 +69,15 @@ for n in range(len(dataset)):
     board, extraInfo = representation.evaluateFenIntoBoard(fen)
     if groundEvaluation[0] == "#":  # if evaluation is mate in...
         if groundEvaluation[1] == "+": # if mate in ... is to black
-            groundEvaluation = "1000"
+            groundEvaluation = "2000"
         else:
-            groundEvaluation = "-1000"
+            groundEvaluation = "-2000"
     if extraInfo == {}: # invalid FEN
         continue
-    #print("evaluation: ", groundEvaluation)
-    #displayBoard(board, extraInfo)
     flatBoard = representation.flattenBoard(board, extraInfo)
     flatBoards.append(flatBoard)
-    groundEvaluation2 = max(-1, min(1, float(groundEvaluation) / 1000))
-    groundEvaluations.append(groundEvaluation2) # clamp groundEvaluation to +/-10000 and normalise to 0-1
+    groundEvaluation2 = max(-1, min(1, float(groundEvaluation) / 2000))
+    groundEvaluations.append(groundEvaluation2) # clamp groundEvaluation to +/-1000 and normalise to 0-1
 
 del dataset
 
@@ -108,14 +94,10 @@ del flatBoards
 del groundEvaluations
 
 model = Sequential()
-model.add(Dense(64, input_dim=768, activation='tanh'))
-model.add(Dense(64, activation='tanh'))
-model.add(Dense(16, activation='tanh'))
-model.add(Dense(16, activation='tanh'))
+model.add(Dense(16, input_dim=453, activation='tanh'))
 model.add(Dense(8, activation='tanh'))
-model.add(Dense(8, activation='tanh'))
-model.add(Dense(8, activation='tanh'))
-model.add(Dense(8, activation='tanh'))
+model.add(Dense(4, activation='tanh'))
+model.add(Dense(4, activation='tanh'))
 model.add(Dense(1, activation='tanh'))
 # compile the keras model
 model.compile(loss='mse', optimizer='adam', metrics=['accuracy'])
@@ -126,32 +108,17 @@ cp_callback = keras.callbacks.ModelCheckpoint(
     filepath="./checkpoints/cp-{epoch:04d}.ckpt", 
     verbose=1, 
     save_weights_only=True,
-    save_freq=500*BATCH_SIZE)
+    save_freq=4000*BATCH_SIZE)
 
 # fit the keras model on the dataset
 print("fitting at", timer() - starttime)
-model.fit(xTrain, yTrain, epochs=100, batch_size=BATCH_SIZE, callbacks=[cp_callback], verbose=1)
+model.fit(xTrain, yTrain, epochs=1000, batch_size=BATCH_SIZE, callbacks=[cp_callback], verbose=1)
 
 print("testing at", timer() - starttime)
 testResults = model.evaluate(xTest, yTest, verbose=0)
 print("test results:", testResults)
 # Save the weights
 #model.save_weights('./checkpoints/my_checkpoint_FINAL.ckpt')
-
-correct = 0
-tested = 0
-for n in range(TESTING_SIZE):
-    prediction = model.predict([xTest[n]])[0][0]
-    if yTest[n] == 0.5:
-        continue
-
-    tested = tested + 1
-    if (yTest[n] > 0 and prediction > 0) or (yTest[n] <0 and prediction < 0):
-        #print("prediction", prediction, "ground", yTest[n], "right", correct)
-        correct = correct + 1
-    #else:
-        #print("prediction", prediction, "ground", yTest[n], "wrong")
-print("correct side:", correct, "of", tested, "times (", (correct / tested) * 100, "%)")
 
 while True:
     print("input FEN")
@@ -164,7 +131,7 @@ while True:
     flatBoard = representation.flattenBoard(board, extraInfo)
     prediction = model.predict([flatBoard])
     print(prediction)
-    print("this is equivalent to being", (prediction[0][0]) * 10, "pawns up")
+    print("this is equivalent to being", (prediction[0][0]) * 20, "pawns up")
 
 #print("input FEN")
 #userFen = input()

@@ -22,31 +22,33 @@ Using concept 2.0, the system would only evaluate one side (black to move). This
 ### Concept 2.1: Position Features
 Create some feature inorder to inform the NN some important things
 
-* `activity_white (8x8)` - number of available legal white move squares
-* `activity_black (8x8)` - number of available legal black move squares
-* `activity_white_sum (1)` - sum of above
-* `activity_black_sum (1)` - sum of above
-* `defense_white (1)` - value of white/black pieces are being defended by other white/black pieces
-* `pressure_white (1)` - value of pieces white/black are attacking, ignoring pieces blocking other pieces
-* `attack_white (1)` - value of white/black pieces are legally attacking black/white pieces
-* `defense_black (1)` - value of white/black pieces are being defended by other white/black pieces
-* `pressure_black (1)` - value of pieces white/black are attacking, ignoring pieces blocking other pieces
-* `attack_black (1)` - value of white/black pieces are legally attacking black/white pieces
+Material:
 * `pawns_remaining (1)` - number of pawns on the board (1 is {9 white, 0 black}, -1 is {0 white, 9 black})
 * `knights_remaining (1)` - number of knights on the board (1 is {2 white, 0 black}, -1 is {0 white, 2 black})
 * `bishops_remaining (1)` - number of bishops on the board (1 is {2 white, 0 black}, -1 is {0 white, 2 black})
 * `queens_remaining (1)` - number of queens on the board (1 is {1 white, 0 black}, -1 is {0 white, 1 black})
+
+Features (for white):
+* `activity_white (8x8)` - number of available legal white move squares
+* `activity_white_sum (1)` - sum of above
+* `defense_white (1)` - value of white pieces are being defended by other white pieces
+* `pressure_white (1)` - value of pieces white are attacking, ignoring pieces blocking other pieces
+* `attack_white (1)` - value of white pieces are legally attacking black pieces
 * `is_white_castled (1)` - determine safety of opposite side
-* `is_black_castled (1)` - encourage castling
 * `white_check (1)` - is white in check right now?
-* `black_check (1)` - is black in check right now?
 
-17 + 8*8*2 = 145 features
+Features (for black):
+* `activity_black (8x8)`
+* `activity_black_sum (1)`
+* `defense_black (1)`
+* `pressure_black (1)`
+* `attack_black (1)`
+* `is_black_castled (1)`
+* `black_check (1)`
 
-Possibly have two NNs, one bigger one which takes in the evaluation of the smaller NN, which evaluates positions
+16 + 8*8*2 = 144 features
 
-* all of the feature crosses above and
-* positional evaluation of second NN 1 (optional)
+Possibly combine with the hot encoding of pieces seen on the first one.
 
 
 ### Concept 2.2: Evaluate Positions via use a CNN
@@ -181,6 +183,26 @@ final accuracy: 0.1283
 test loss: 0.013952
 test accuracy: 0.127
 correct side: 54.2%
-dimesnions: 64x2 16x2 8x4
+dimensions: 64x2 16x2 8x4
 ```
 again, very cool. However, in the opening it cannot precisely determine who is winning. I am starting to realise that in context, the absolute evaluations do not mean a lot. Actually, the relative evaluation between moves determine which move is best to be played (black is trying to minimize the evaluation) so the lowest number should be the best next move: this means the absolute evaluation accuracy is not as relevant. The engine struggles to identify moves which results in the immediate taking of the piece (it says a good move is black bishop infront of a white pawn) Additionally, proposed concept 2.0.1 and 2.2.
+
+### Test 9
+Major changes were made to the encoding of features
+* allow white to move to be considered
+* material counts be considered
+* black materials are now encoded in the same grid as white, but with -1 instead of +1
+* removed correct side analysis
+* change dimensions
+
+```
+dataset: chessData-small
+time to train: 11357s (3hrs, 9min)
+epochs: 1000
+final loss: 0.0208
+final accuracy: 0.1175
+test loss: 0.0265
+test accuracy: 0.12
+dimensions: 16x1 16x1 8x1 4x2
+```
+Loss seems too high, probably because of the lack of neurons. The training time seems significantly less, probably due to the lack of dimensions and inputs, despite almost doubling the training set size (200k -> 400k) because white to move is now accepted. More training data, lower batch sizes or larger dimensions may be a good idea. On some testing, it seems more accurate than previous models on positions. Positions were taken from games and pawns and structures were moved (but not taken away or added). The direction of increase/decrease in evaluation matched Stockfish. There is still doubt that previous models overfitted to training set due to the sheer size of training set, but this model does seem to perform well but may risk underfitting due to lack of hidden layers.
