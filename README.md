@@ -203,6 +203,19 @@ final loss: 0.0208
 final accuracy: 0.1175
 test loss: 0.0265
 test accuracy: 0.12
-dimensions: 16x1 16x1 8x1 4x2
+dimensions: 16x1 8x1 4x2
 ```
 Loss seems too high, probably because of the lack of neurons. The training time seems significantly less, probably due to the lack of dimensions and inputs, despite almost doubling the training set size (200k -> 400k) because white to move is now accepted. More training data, lower batch sizes or larger dimensions may be a good idea. On some testing, it seems more accurate than previous models on positions. Positions were taken from games and pawns and structures were moved (but not taken away or added). The direction of increase/decrease in evaluation matched Stockfish. There is still doubt that previous models overfitted to training set due to the sheer size of training set, but this model does seem to perform well but may risk underfitting due to lack of hidden layers. A VERY good idea is to only change ONE variables at a time (ceteris paribus) and do not mess with so many variables since it is difficult to tell how the NN improved.
+
+### Test 10
+Same as Test 9 but with different dimensions
+```
+dataset: chessData-small
+time to train:  21812s (6hrs, 3min)
+epochs: 1000
+final loss: 0.0092
+final accuracy: 0.1214
+test loss: 0.0293
+test accuracy: 0.12
+dimensions: 64x1 32x1 16x2 4x2
+```
