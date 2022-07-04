@@ -4,7 +4,7 @@
 
 # Promises
 -   100 percent my code - not copied from anywhere
--   I will not examine Stockfish or any other engine's code
+-   I will not copy Stockfish or any other large engine's code/concepts
 -   No book moves were manually inputted which weren't calculated by the engine.
 
 # Early Ideas/Concepts
