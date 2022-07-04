@@ -28,6 +28,9 @@ import train
 # to measure exec time
 from timeit import default_timer as timer   
 
+import copy
+from operator import itemgetter
+
 BLANK_PIECE = "."
 
 def displayBoard(board, extraInfo):
@@ -44,11 +47,10 @@ def displayBoard(board, extraInfo):
     print("can black castle queenside? ", extraInfo["canBlackCastleQueenside"])
     print("enpassant square: ", extraInfo["enpassantSquare"])
     print("halfmove clock: ", extraInfo["halfmoveClock"])
-    print("material: ", extraInfo["material"])
 
 model = train.create_model()
-model = train.train(model)
-#model.load_weights("./checkpoints/test 9/cp-1000.ckpt")
+#model = train.train(model)
+model.load_weights("./checkpoints/test 10/cp-1000.ckpt")
 
 def add_move(possible_moves, from_coord, to_coord):
     #from_coord = coord_to_human(from_coord)
@@ -315,18 +317,22 @@ def find_possible_moves(board, is_white_to_move):
                             if moveable_at(board, (y - 1 + j, x - 1 + i), is_white_to_move):
                                 add_move(possible_moves, (y, x), (y - 1 + j, x - 1 + i))
 
-    return possible_moves
-
-def generate_boards_from_moves(board, possible_moves):
-    possible_boards = []
+    possible_moves_final = []
     for move_from in possible_moves:
         for move_to in possible_moves[move_from]:
-            new_board = board[:] # copy list
-            piece = new_board[move_from[0]][move_from[1]].decode()
-            new_board[move_from[0]][move_from[1]] = BLANK_PIECE
-            new_board[move_to[0]][move_to[1]] = piece
-            possible_boards.append(new_board)
-            print(coord_to_human(move_from), "->", coord_to_human(move_to))
+            possible_moves_final.append({"from": move_from, "to": move_to})
+    return possible_moves_final
+
+def generate_scenarios_from_moves(board, possible_moves):
+    for move in possible_moves:
+        new_board = copy.copy(board) # copy list
+        move_from = move["from"]
+        move_to = move["to"]
+        piece = new_board[move_from[0]][move_from[1]].decode()
+        new_board[move_from[0]][move_from[1]] = BLANK_PIECE
+        new_board[move_to[0]][move_to[1]] = piece
+        move["board"] = new_board
+        #print(coord_to_human(move_from), "->", coord_to_human(move_to))
                 
 
 
@@ -335,12 +341,29 @@ while True:
     userFen = input()
     board, extraInfo = representation.evaluateFenIntoBoard(userFen)
     displayBoard(board, extraInfo)
-    #possible_moves = find_possible_moves(board, True)
-    #generate_boards_from_moves(board, possible_moves)
     flatBoard = representation.flattenBoard(board, extraInfo)
     prediction = model.predict([flatBoard])
     print(prediction)
     print("this is equivalent to being", (prediction[0][0]) * 20, "pawns up")
+
+    is_white_to_move = extraInfo["whoseMove"] == "w"
+    possible_moves = find_possible_moves(board, is_white_to_move)
+    generate_scenarios_from_moves(board, possible_moves)
+
+    starttime = timer()
+    print("evaluating =====================================")
+    for scenario in possible_moves:
+        flatBoard = representation.flattenBoard(scenario["board"], extraInfo)
+        prediction = model.predict([flatBoard])
+        scenario["prediction"] = prediction[0]
+
+    possible_moves_sorted = sorted(possible_moves, key=itemgetter('prediction'), reverse=is_white_to_move) 
+    best_move = possible_moves_sorted[0]
+    move_from = best_move["from"]
+    move_to = best_move["to"]
+    print("depth 1 at", timer() - starttime, "s")
+    print("BEST MOVE:", coord_to_human(move_from), "->", coord_to_human(move_to))
+
 
 #print("input FEN")
 #userFen = input()

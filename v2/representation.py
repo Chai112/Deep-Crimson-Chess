@@ -13,10 +13,6 @@ def evaluateFenIntoBoard(userFen):
     canBlackCastleQueenside = False
     halfmoveClock = 0
 
-    material = {}
-    for piece in MATERIAL_PIECES:
-        material[piece] = 0.0
-
     enpassantSquare = "-"
 
     x = 0;
@@ -34,13 +30,6 @@ def evaluateFenIntoBoard(userFen):
             x = 0
         else:
             board[y][x] = char
-
-            # count material
-            if char.lower() in MATERIAL_PIECES:
-                if char.isupper():
-                    material[char.lower()] = material[char.lower()] + 0.1
-                else:
-                    material[char.lower()] = material[char.lower()] - 0.1
 
             x = x + 1
 
@@ -61,7 +50,7 @@ def evaluateFenIntoBoard(userFen):
         "canBlackCastleQueenside": canBlackCastleQueenside,
         "enpassantSquare": enpassantSquare,
         "halfmoveClock": halfmoveClock,
-        "material": material,
+        "whoseMove": whoseMove,
     }
     return board, extraInfo
 
@@ -71,6 +60,10 @@ def flattenBoard (board, extraInfo):
     for piece in PIECES:
         flatBoards[piece]=np.empty([8,8], dtype='f')
         flatBoards[piece].fill(0.0)
+
+    material = {}
+    for piece in MATERIAL_PIECES:
+        material[piece] = 0.0
 
     for y in range(8):
         for x in range(8):
@@ -84,6 +77,13 @@ def flattenBoard (board, extraInfo):
                     else:
                         flatBoards[piece][y][x] = -1.0
 
+                # count material
+                if piece.lower() in MATERIAL_PIECES:
+                    if piece.isupper():
+                        material[piece.lower()] = material[piece.lower()] + 0.1
+                    else:
+                        material[piece.lower()] = material[piece.lower()] - 0.1
+
     flatBoard = []
     #flatBoard.append(1.0 if extraInfo["canWhiteCastleKingside"] else 0.0)
     #flatBoard.append(1.0 if extraInfo["canWhiteCastleQueenside"] else 0.0)
@@ -91,7 +91,7 @@ def flattenBoard (board, extraInfo):
     #flatBoard.append(1.0 if extraInfo["canBlackCastleQueenside"] else 0.0)
     #flatBoard.append(float(extraInfo["halfmoveClock"]))
     for piece in MATERIAL_PIECES:
-        flatBoard.append(extraInfo["material"][piece])
+        flatBoard.append(material[piece])
 
     for piece in PIECES:
         for y in range(8):
