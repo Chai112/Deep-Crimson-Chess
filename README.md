@@ -4,7 +4,7 @@
 
 # Promises
 -   100 percent my code - not copied from anywhere
--   I will not copy Stockfish or any other large engine's code/concepts
+-   I will not copy ideas/code from Stockfish or any other well-known engine
 -   No book moves were manually inputted which weren't calculated by the engine.
 
 # Early Ideas/Concepts
@@ -53,6 +53,8 @@ Possibly combine with the hot encoding of pieces seen on the first one.
 
 ### Concept 2.2: Evaluate Positions via use a CNN
 Chuck it in a CNN and hopefully it works. A test CNN project would be nice to start with just to check it works for other datasets.
+
+04/07/22: Found an [interesting youtube video](https://www.youtube.com/watch?v=ffzvhe97J4Q) which seems to use a CNN to draw stockfish(!). This seems to support that it would work. I looked at the code and it seems very elegant, but they did not code the chess engine themselves. I think I will try a CNN as it seems very elegant but I do want to encorporate master games into the dataset so that my engine is more "human."
 
 ### Concept 2.1.1:
 Instead of one-hot encoding features as one grid for each piece and colour, encode them as 0 - no piece, -1 black, 1 white. Do not do this for the pawns though as their attack is one-facing: instead, make sure that they are two different grids. This reduces the matrix down to 8*8*(6+ 1) = 448 instead of 8*8*12 = 768 (58% of original) and also logically makes sense as the severity of positions should be around the same.

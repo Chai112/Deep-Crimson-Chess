@@ -54,6 +54,34 @@ def evaluateFenIntoBoard(userFen):
     }
     return board, extraInfo
 
+PIECE_TO_INT = {
+    "p": 0,
+    "n": 1,
+    "b": 2,
+    "r": 3,
+    "q": 4,
+    "k": 5,
+}
+def format_board (board):
+    formatted_board = np.zeros((8, 8, 6))
+    formatted_board.fill(0.5)
+
+    for y in range(8):
+        for x in range(8):
+            piece = board[y][x].decode()
+
+            if piece == BLANK_PIECE:
+                continue
+
+            piece_int = PIECE_TO_INT[piece.lower()]
+            if piece.isupper():
+                formatted_board[x][y][piece_int] = 1
+            else:
+                formatted_board[x][y][piece_int] = -1
+
+    return formatted_board
+    
+
 def flattenBoard (board, extraInfo):
     flatBoards = {}
 

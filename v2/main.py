@@ -30,6 +30,8 @@ import chess
 from timeit import default_timer as timer   
 from operator import itemgetter
 
+import matplotlib.pyplot as plt
+
 def displayBoard(board, extraInfo):
     for y in range(8):
         print(8-y, "| ", end="")
@@ -46,17 +48,17 @@ def displayBoard(board, extraInfo):
     print("halfmove clock: ", extraInfo["halfmoveClock"])
 
 model = train.create_model()
-#model = train.train(model)
-model.load_weights("./checkpoints/test 10/cp-1000.ckpt")
+model = train.train(model)
+#model.load_weights("./checkpoints/test 10/cp-1000.ckpt")
 
 while True:
     print("input FEN")
     userFen = input()
     board, extraInfo = representation.evaluateFenIntoBoard(userFen)
     displayBoard(board, extraInfo)
-    flatBoard = representation.flattenBoard(board, extraInfo)
-    print(flatBoard.shape);
-    prediction = model.predict([flatBoard])
+
+    formatted_board = representation.format_board(board)
+    prediction = model.predict(np.array([formatted_board]))
     print(prediction)
     print("this is equivalent to being", (prediction[0][0]) * 20, "pawns up")
 
@@ -67,8 +69,8 @@ while True:
     starttime = timer()
     print("evaluating =====================================")
     for scenario in possible_moves:
-        flatBoard = representation.flattenBoard(scenario["board"], extraInfo)
-        prediction = model.predict([flatBoard])
+        formatted_board = representation.format_board(scenario["board"])
+        prediction = model.predict(np.array([formatted_board]))
         scenario["prediction"] = prediction[0]
 
     possible_moves_sorted = sorted(possible_moves, key=itemgetter('prediction'), reverse=is_white_to_move) 
