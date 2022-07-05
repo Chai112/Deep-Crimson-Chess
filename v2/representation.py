@@ -40,6 +40,8 @@ def evaluateFenIntoBoard(userFen):
     halfmoveClock = fen[4]
 
     whoseMove = fen[1]
+    if whoseMove == "w": # we dont do that here
+        return [], {}
 
     enpassantSquare = fen[3]
 

@@ -8,20 +8,20 @@ import representation
 from timeit import default_timer as timer   
 import matplotlib.pyplot as plt
 
-TESTING_SIZE = 1000
-EPOCHS = 10
-DATASET = "../datasets/chessData-verysmall.csv"
+TESTING_SIZE = 100
+EPOCHS = 200 
+DATASET = "../datasets/chessData-small.csv"
 MAX_EVAL = 2000 # in centipawns
 
 def create_model():
     model = models.Sequential()
-    model.add(layers.Conv2D(16, 3, activation='relu', input_shape=(8, 8, 6)))
-    model.add(layers.MaxPooling2D((2, 2)))
-    model.add(layers.Conv2D(32, 3, activation='relu'))
+    model.add(layers.Conv2D(32, 3, activation='relu', input_shape=(8, 8, 6),padding='same'))
+    model.add(layers.MaxPooling2D((2, 2), padding='same'))
+    model.add(layers.Conv2D(64, 3, activation='relu', padding='same'))
+    model.add(layers.MaxPooling2D((2, 2), padding='same'))
+    model.add(layers.Conv2D(64, 3, activation='relu', padding='same'))
     model.add(layers.Flatten())
-    model.add(layers.Dense(16, activation='relu'))
-    model.add(layers.Dense(8))
-    model.add(layers.Dense(4))
+    model.add(layers.Dense(64, activation='relu'))
     model.add(layers.Dense(1))
     model.summary()
 
@@ -39,9 +39,10 @@ def train(model):
     dataset = dataset[1:] # remove column names
     print("data loaded at", timer() - starttime)
 
-    train_boards = np.empty((len(dataset), 8,8,6))
-    train_evals = np.empty(len(dataset))
+    train_boards = np.zeros((len(dataset), 8,8,6))
+    train_evals = np.zeros(len(dataset))
 
+    N = 0
     for n in range(len(dataset)):
         fen = dataset[n][0]
         evaluation = dataset[n][1]
@@ -53,18 +54,20 @@ def train(model):
             else:
                 evaluation = str(-MAX_EVAL)
         if extraInfo == {}: # invalid FEN
-            print("found invalid FEN in database")
-            exit()
+            continue
 
         formatted_board = representation.format_board(board)
-        train_boards[n] = formatted_board
+        train_boards[N] = formatted_board
         # clamp evaluations to +/-1000 and normalise to 0-1
         formatted_evaluation = max(0, min(1, float(evaluation) / (MAX_EVAL * 2) + 0.5))
-        train_evals[n] = formatted_evaluation
-
-    #print(train_boards[5])
+        train_evals[N] = formatted_evaluation
+        N = N + 1
 
     del dataset
+
+    # trim white to moves
+    train_boards = train_boards[:N]
+    train_evals = train_evals[:N]
 
     xTrain = train_boards[:-TESTING_SIZE]
     yTrain = train_evals[:-TESTING_SIZE]
@@ -83,7 +86,7 @@ def train(model):
         filepath="./checkpoints/cp-{epoch:04d}.ckpt", 
         verbose=1, 
         save_weights_only=True,
-        save_freq=8000*32)
+        save_freq=5000*32)
 
     # fit the keras model on the dataset
     print("fitting at", timer() - starttime)

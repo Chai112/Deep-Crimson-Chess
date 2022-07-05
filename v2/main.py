@@ -32,6 +32,8 @@ from operator import itemgetter
 
 import matplotlib.pyplot as plt
 
+MAX_EVAL = 2000 # in centipawns
+
 def displayBoard(board, extraInfo):
     for y in range(8):
         print(8-y, "| ", end="")
@@ -48,21 +50,29 @@ def displayBoard(board, extraInfo):
     print("halfmove clock: ", extraInfo["halfmoveClock"])
 
 model = train.create_model()
-model = train.train(model)
-#model.load_weights("./checkpoints/test 10/cp-1000.ckpt")
+#model = train.train(model)
+model.load_weights("./checkpoints/cp-0152.ckpt")
 
 while True:
     print("input FEN")
     userFen = input()
+
+    # convert FEN to board
     board, extraInfo = representation.evaluateFenIntoBoard(userFen)
     displayBoard(board, extraInfo)
 
+    # format board for NN
     formatted_board = representation.format_board(board)
-    prediction = model.predict(np.array([formatted_board]))
-    print(prediction)
-    print("this is equivalent to being", (prediction[0][0]) * 20, "pawns up")
-
     is_white_to_move = extraInfo["whoseMove"] == "w"
+
+    if is_white_to_move:
+        print("black to move only")
+        continue
+
+    # predict
+    prediction = model.predict(np.array([formatted_board]))
+    print("this is equivalent to being", ((prediction[0][0]) - 0.5) * MAX_EVAL * 0.02, "pawns up")
+
     possible_moves = chess.find_possible_moves(board, is_white_to_move)
     chess.generate_scenarios_from_moves(board, possible_moves)
 
@@ -77,7 +87,9 @@ while True:
     best_move = possible_moves_sorted[0]
     move_from = best_move["from"]
     move_to = best_move["to"]
-    print("depth 1 at", timer() - starttime, "s")
+    print("depth 1")
+    print("time:", timer() - starttime, "s")
+    print("searches:", len(possible_moves), "moves")
     print("BEST MOVE:", chess.coord_to_human(move_from), "->", chess.coord_to_human(move_to))
 
 

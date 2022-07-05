@@ -3,12 +3,15 @@
 ### Version 2 started on 9 June, 2022
 
 # Promises
--   100 percent my code - not copied from anywhere
--   I will not copy ideas/code from Stockfish or any other well-known engine
--   No book moves were manually inputted which weren't calculated by the engine.
+- Program must evaluate moves by itself (no using Stockfish/other engines during runtime)
+- Program must not use book moves
+- No closely copying ideas/code from Stockfish or any other well-known engines
+
+Extra handicap opportunity:
+- The computer should have 1/10th of the time of the human.
 
 # Early Ideas/Concepts
-## Concept 1: Brute Force/ Monte Carlo Search
+## Concept 1: Brute Force/ Monte Carlo Search/Min-max/Alpha-beta pruning
 Sounds reasonable.
 
 ## Concept 2: Evaluate Positions via DNN
@@ -221,3 +224,37 @@ test loss: 0.0293
 test accuracy: 0.12
 dimensions: 64x1 32x1 16x2 4x2
 ```
+
+### Test 11
+Major changes
+* replace with Convolutional Neural Network!!
+* white to move are not considered
+* material is no longer added (reverse changes from test 9)
+```
+dataset: chessData-small
+time to train: >6 hours, stopped before end
+epochs: 152
+final loss: 0.0028
+final accuracy: 0.0203
+dimensions:
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+conv2d (Conv2D)              (None, 8, 8, 32)          1760      
+_________________________________________________________________
+max_pooling2d (MaxPooling2D) (None, 4, 4, 32)          0         
+_________________________________________________________________
+conv2d_1 (Conv2D)            (None, 4, 4, 64)          18496     
+_________________________________________________________________
+max_pooling2d_1 (MaxPooling2 (None, 2, 2, 64)          0         
+_________________________________________________________________
+conv2d_2 (Conv2D)            (None, 2, 2, 64)          36928     
+_________________________________________________________________
+flatten (Flatten)            (None, 256)               0         
+_________________________________________________________________
+dense (Dense)                (None, 64)                16448     
+_________________________________________________________________
+dense_1 (Dense)              (None, 1)                 65        
+=================================================================
+```
+Does not seem to go for centre control at all. It does not seem to mind losing material either. It does recognize more pattern based moves such as fianchetto'ing the bishop, which is nice. It seems like there are too many parameters and it is overfitting.
