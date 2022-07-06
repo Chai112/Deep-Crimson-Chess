@@ -3,8 +3,6 @@ import copy
 BLANK_PIECE = '.'
 
 def add_move(possible_moves, from_coord, to_coord):
-    #from_coord = coord_to_human(from_coord)
-    #to_coord = coord_to_human(to_coord)
     if not from_coord in possible_moves:
         possible_moves[from_coord] = []
     possible_moves[from_coord].append(to_coord)
@@ -270,16 +268,22 @@ def find_possible_moves(board, is_white_to_move):
     possible_moves_final = []
     for move_from in possible_moves:
         for move_to in possible_moves[move_from]:
-            possible_moves_final.append({"from": move_from, "to": move_to})
+            possible_moves_final.append({"move_sequence": [{"from": move_from, "to": move_to}]})
     return possible_moves_final
 
-def generate_scenarios_from_moves(board, possible_moves):
+def generate_boards_from_moves(board, possible_moves):
+    scenarios = []
     for move in possible_moves:
         new_board = copy.copy(board) # copy list
-        move_from = move["from"]
-        move_to = move["to"]
+        move_from = move["move_sequence"][0]["from"]
+        move_to = move["move_sequence"][0]["to"]
         piece = new_board[move_from[0]][move_from[1]].decode()
         new_board[move_from[0]][move_from[1]] = BLANK_PIECE
         new_board[move_to[0]][move_to[1]] = piece
-        move["board"] = new_board
+
+        scenario = {}
+        scenario["move_sequence"] = [{"from": move_from, "to": move_to}]
+        scenario["board"] = new_board
+        scenarios.append(scenario)
         #print(coord_to_human(move_from), "->", coord_to_human(move_to))
+    return scenarios

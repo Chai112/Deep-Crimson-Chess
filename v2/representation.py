@@ -66,7 +66,6 @@ PIECE_TO_INT = {
 }
 def format_board (board):
     formatted_board = np.zeros((8, 8, 6))
-    formatted_board.fill(0.5)
 
     for y in range(8):
         for x in range(8):

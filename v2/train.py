@@ -9,19 +9,20 @@ from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 
 TESTING_SIZE = 100
-EPOCHS = 200 
+EPOCHS = 200
 DATASET = "../datasets/chessData-small.csv"
 MAX_EVAL = 2000 # in centipawns
 
 def create_model():
     model = models.Sequential()
-    model.add(layers.Conv2D(32, 3, activation='relu', input_shape=(8, 8, 6),padding='same'))
+    model.add(layers.Conv2D(16, 3, activation='tanh', input_shape=(8, 8, 6),padding='same'))
     model.add(layers.MaxPooling2D((2, 2), padding='same'))
-    model.add(layers.Conv2D(64, 3, activation='relu', padding='same'))
+    model.add(layers.Conv2D(32, 3, activation='tanh', padding='same'))
     model.add(layers.MaxPooling2D((2, 2), padding='same'))
-    model.add(layers.Conv2D(64, 3, activation='relu', padding='same'))
+    model.add(layers.Conv2D(32, 3, activation='tanh', padding='same'))
     model.add(layers.Flatten())
-    model.add(layers.Dense(64, activation='relu'))
+    model.add(layers.Dense(16, activation='tanh'))
+    model.add(layers.Dense(4, activation='tanh'))
     model.add(layers.Dense(1))
     model.summary()
 
@@ -59,7 +60,7 @@ def train(model):
         formatted_board = representation.format_board(board)
         train_boards[N] = formatted_board
         # clamp evaluations to +/-1000 and normalise to 0-1
-        formatted_evaluation = max(0, min(1, float(evaluation) / (MAX_EVAL * 2) + 0.5))
+        formatted_evaluation = max(0, min(1, float(evaluation) / MAX_EVAL))
         train_evals[N] = formatted_evaluation
         N = N + 1
 
@@ -86,7 +87,7 @@ def train(model):
         filepath="./checkpoints/cp-{epoch:04d}.ckpt", 
         verbose=1, 
         save_weights_only=True,
-        save_freq=5000*32)
+        save_freq=100*32)
 
     # fit the keras model on the dataset
     print("fitting at", timer() - starttime)

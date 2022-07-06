@@ -1,6 +1,8 @@
-# SHCR - SHallow CRimson Chess Engine
-### AI/ML chess engine developed by Chaidhat Chaimongkol
-### Version 2 started on 9 June, 2022
+# SHCR - Shallow Crimson
+### A deep learning chess analysis engine
+### by Chaidhat Chaimongkol
+Version 1 started on 2020, 26 December
+Version 2 started on 2022, 9 June
 
 # Promises
 - Program must evaluate moves by itself (no using Stockfish/other engines during runtime)
@@ -58,6 +60,12 @@ Possibly combine with the hot encoding of pieces seen on the first one.
 Chuck it in a CNN and hopefully it works. A test CNN project would be nice to start with just to check it works for other datasets.
 
 04/07/22: Found an [interesting youtube video](https://www.youtube.com/watch?v=ffzvhe97J4Q) which seems to use a CNN to draw stockfish(!). This seems to support that it would work. I looked at the code and it seems very elegant, but they did not code the chess engine themselves. I think I will try a CNN as it seems very elegant but I do want to encorporate master games into the dataset so that my engine is more "human."
+
+### Concept 2.2.1: Evaluate white/black to move
+At the moment, the program only evaluates black to move. The program can double its training data by simply reversing the board and reversing the signs of the pieces: black becomes white and vice versa. This also would allow the engine to play as white as well
+
+### Concept 2.2.2: Feed attributes into FC layer
+Extra attributes such as the pieces remaining should be fed into the Fully Connected (FC) layer as a second input. See [this](https://pyimagesearch.com/2019/02/04/keras-multiple-inputs-and-mixed-data/) for reference.
 
 ### Concept 2.1.1:
 Instead of one-hot encoding features as one grid for each piece and colour, encode them as 0 - no piece, -1 black, 1 white. Do not do this for the pawns though as their attack is one-facing: instead, make sure that they are two different grids. This reduces the matrix down to 8*8*(6+ 1) = 448 instead of 8*8*12 = 768 (58% of original) and also logically makes sense as the severity of positions should be around the same.
@@ -256,5 +264,36 @@ dense (Dense)                (None, 64)                16448
 _________________________________________________________________
 dense_1 (Dense)              (None, 1)                 65        
 =================================================================
+Params: 73,697
+time per evaluation: 0.03 s/move
 ```
-Does not seem to go for centre control at all. It does not seem to mind losing material either. It does recognize more pattern based moves such as fianchetto'ing the bishop, which is nice. It seems like there are too many parameters and it is overfitting.
+Does not seem to go for centre control at all. It does not seem to mind losing material either. It does recognize more pattern based moves such as fianchetto'ing the bishop, which is nice. It seems like there are too many parameters and it is overfitting. Time per evaluation is a bit high. It can only feasibly do around a depth 2 evaluation.
+
+### Test 12
+Major bug fix
+* the representation was incorrect: everything was set to 0.5, but black pieces were -1 and white were +1. This fed into a ReLU NN, which cannot take in negative numbers. TanH is used instead now and is set to 0.
+* renamed final loss to training loss and accuracy
+Did not get a checkpoint
+```
+dataset: chessData-verysmall
+time to train: ?
+epochs: 100
+training loss: 3.712e-04
+training accuracy: 0.6321 (!)
+test loss: 0.0016
+test accuracy: 0.8300 (!)
+dimensions:
+model.add(layers.Conv2D(16, 3, activation='tanh', input_shape=(8, 8, 6),padding='same'))
+model.add(layers.MaxPooling2D((2, 2), padding='same'))
+model.add(layers.Conv2D(32, 3, activation='tanh', padding='same'))
+model.add(layers.MaxPooling2D((2, 2), padding='same'))
+model.add(layers.Conv2D(32, 3, activation='tanh', padding='same'))
+model.add(layers.Flatten())
+model.add(layers.Dense(16, activation='tanh'))
+model.add(layers.Dense(4, activation='tanh'))
+model.add(layers.Dense(1))
+
+Params: 
+time per evaluation: 0.03 s/move
+```
+Very high accuracy in the datasets, but could be due to the small dataset. The model goes for centre control at the start and is very good at detecting where to move which pieces. It does not go very much for material still, as a pawn will still take another centre pawn instead of a knight on the side. This is a far greater improvement than before. Time per evaluation is still a bit high.
