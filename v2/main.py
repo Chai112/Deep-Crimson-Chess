@@ -51,7 +51,10 @@ def displayBoard(board, extraInfo):
     #jjjprint("halfmove clock: ", extraInfo["halfmoveClock"])
 
 def format_eval(eval):
-    return f'{eval * MAX_EVAL * 0.01:.3}'
+    prefix = ""
+    if eval > 0:
+        prefix = "+"
+    return prefix + f'{eval * MAX_EVAL * 0.01:.3}'
 
 def min_max(board, is_white_to_move, depth):
 
@@ -60,8 +63,12 @@ def min_max(board, is_white_to_move, depth):
 
     final_scenarios = []
 
+    # profiling
+    if depth == 1:
+        bar = Bar('depth ' + str(depth), max=len(scenarios))
+
     for scenario in scenarios:
-        if (depth == 0):
+        if depth == 0:
             # predict
             formatted_board = representation.format_board(scenario["board"])
             prediction = model.predict(np.array([formatted_board]))
@@ -70,7 +77,17 @@ def min_max(board, is_white_to_move, depth):
             final_scenarios.append(scenario)
         else:
             # recursively min-max
-            final_scenarios.append(min_max(scenario["board"], not is_white_to_move, depth - 1))
+            final_scenario = min_max(scenario["board"], not is_white_to_move, depth - 1)
+            final_scenario["move_sequence"].append(scenario["move_sequence"][0])
+            final_scenarios.append(final_scenario)
+
+        # profiling
+        if depth == 1:
+            bar.next()
+
+    # profiling
+    if depth == 1:
+        bar.finish()
 
     # sort from most favourable to least favourable
     final_scenarios_sorted = sorted(final_scenarios, key=itemgetter('prediction'), reverse= is_white_to_move) 
@@ -79,41 +96,8 @@ def min_max(board, is_white_to_move, depth):
 
 
 def find_best_scenario(board, is_white_to_move):
-    starttime = timer()
-
-    possible_moves = chess.find_possible_moves(board, is_white_to_move)
-    scenarios1 = chess.generate_boards_from_moves(board, possible_moves)
-    final_scenarios = []
-    for scenario in scenarios1:
-        scenarios = []
-        possible_moves_2 = chess.find_possible_moves(scenario["board"], not is_white_to_move)
-        scenarios = chess.generate_boards_from_moves(board, possible_moves_2)
-        for scenario2 in scenarios:
-            for move_sequence in scenario["move_sequence"]:
-                scenario2["move_sequence"].append(move_sequence)
-            final_scenarios.append(scenario2)
-
-    search_time = timer()
-
-    progress_bar = Bar('depth 2', max=len(final_scenarios))
-    for scenario in final_scenarios:
-        formatted_board = representation.format_board(scenario["board"])
-        prediction = model.predict(np.array([formatted_board]))
-        scenario["prediction"] = prediction[0]
-        progress_bar.next()
-    progress_bar.finish()
-
-    eval_time = timer()
-
-    final_scenarios_sorted = sorted(final_scenarios, key=itemgetter('prediction'), reverse= is_white_to_move) 
-    print(final_scenarios_sorted[0]["prediction"])
-    print(final_scenarios_sorted[len(final_scenarios) - 1]["prediction"])
-    print("search time:\t", f'{search_time - starttime:.3}', "s")
-    print("eval time:\t", f'{eval_time - search_time:.3}', "s")
-    print("time per eval:\t", f'{(eval_time - search_time) / len(final_scenarios):.3}', "s/moves")
-
-    best_scenario = final_scenarios_sorted[0]
-    return best_scenario
+    best_scenario = min_max(board, is_white_to_move, 1)
+    return 
 
 model = train.create_model()
 #model = train.train(model)
@@ -142,7 +126,10 @@ while True:
     print("")
 
     # find next best move
-    best_scenario = find_best_scenario(board, is_white_to_move)
+    starttime = timer()
+    best_scenario = min_max(board, is_white_to_move, 1)
+    eval_time = timer()
+    print("eval time:\t", f'{eval_time - starttime:.3}', "s")
 
     best_move_seq = best_scenario["move_sequence"]
     best_move_seq.reverse()
