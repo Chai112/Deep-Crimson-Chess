@@ -70,8 +70,8 @@ def min_max(board, is_white_to_move, depth):
     for scenario in scenarios:
         if depth == 0:
             # predict
-            formatted_board = representation.format_board(scenario["board"])
-            prediction = model.predict(np.array([formatted_board]))
+            formatted_board, attr = representation.format_board(scenario["board"])
+            prediction = model.predict([np.array([formatted_board]), np.array([attr])])
             scenario["prediction"] = prediction[0]
 
             final_scenarios.append(scenario)
@@ -100,8 +100,8 @@ def find_best_scenario(board, is_white_to_move):
     return 
 
 model = train.create_model()
-#model = train.train(model)
-model.load_weights("./checkpoints/cp-0019.ckpt")
+model = train.train(model)
+#model.load_weights("./checkpoints/cp-0019.ckpt")
 
 while True:
     print("input FEN")
@@ -112,7 +112,7 @@ while True:
     displayBoard(board, extraInfo)
 
     # format board for NN
-    formatted_board = representation.format_board(board)
+    formatted_board, attr = representation.format_board(board)
     is_white_to_move = extraInfo["whoseMove"] == "w"
 
     if is_white_to_move:
@@ -120,7 +120,7 @@ while True:
         continue
 
     # predict
-    eval_init = model.predict(np.array([formatted_board]))[0][0]
+    eval_init = model.predict([np.array([formatted_board, formatted_board]), np.array([attr, attr])])[0][0]
     print("")
     print("init eval:\t", format_eval(eval_init), "pawns")
     print("")

@@ -66,6 +66,7 @@ PIECE_TO_INT = {
 }
 def format_board (board):
     formatted_board = np.zeros((8, 8, 6))
+    material = np.zeros(5)
 
     for y in range(8):
         for x in range(8):
@@ -77,10 +78,14 @@ def format_board (board):
             piece_int = PIECE_TO_INT[piece.lower()]
             if piece.isupper():
                 formatted_board[x][y][piece_int] = 1
+                if piece.lower() != "k":    # not a king
+                    material[piece_int] += 0.1
             else:
                 formatted_board[x][y][piece_int] = -1
+                if piece.lower() != "k":    # not a king
+                    material[piece_int] -= 0.1
 
-    return formatted_board
+    return formatted_board, material
     
 
 def flattenBoard (board, extraInfo):
