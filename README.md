@@ -297,3 +297,17 @@ Params:
 time per evaluation: 0.03 s/move
 ```
 Very high accuracy in the datasets, but could be due to the small dataset. The model goes for centre control at the start and is very good at detecting where to move which pieces. It does not go very much for material still, as a pawn will still take another centre pawn instead of a knight on the side. This is a far greater improvement than before. Time per evaluation is still a bit high.
+
+### Test 14
+Major changes
+* added multiple inputs (board + attr (materials))
+* batching predictions at depth 0
+```
+dataset: chessData-small
+time to train: ?
+epochs: 200 (seem to converge at 100)
+training loss: 0.0071
+training accuracy: 0.5900
+test loss: 0.0174
+test accuracy: 0.5900
+time per evaluation: <0.01 s/move

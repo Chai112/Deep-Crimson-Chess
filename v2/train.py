@@ -10,8 +10,8 @@ from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 
 TESTING_SIZE = 100
-EPOCHS = 10
-DATASET = "../datasets/chessData-verysmall.csv"
+EPOCHS = 200
+DATASET = "../datasets/chessData-small.csv"
 MAX_EVAL = 2000 # in centipawns
 
 def create_model():
@@ -104,7 +104,7 @@ def train(model):
         filepath="./checkpoints/cp-{epoch:04d}.ckpt", 
         verbose=1, 
         save_weights_only=True,
-        save_freq=100*32)
+        save_freq=8000*32)
 
     # fit the keras model on the dataset
     print("fitting at", timer() - starttime)
