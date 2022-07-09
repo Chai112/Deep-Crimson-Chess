@@ -56,6 +56,13 @@ def format_eval(eval):
         prefix = "+"
     return prefix + f'{eval * MAX_EVAL * 0.01:.3}'
 
+count = 0
+def countt():
+    global count
+    count = count + 1
+    if count % 100 == 0:
+        print(count)
+
 def min_max(board, is_white_to_move, depth):
 
     possible_moves = chess.find_possible_moves(board, is_white_to_move)
@@ -67,23 +74,30 @@ def min_max(board, is_white_to_move, depth):
     if depth == 1:
         bar = Bar('depth ' + str(depth), max=len(scenarios))
 
-    for scenario in scenarios:
-        if depth == 0:
-            # predict
+    if depth == 0:
+        formatted_boards = []
+        attrs = []
+        for scenario in scenarios:
+            #countt()
             formatted_board, attr = representation.format_board(scenario["board"])
-            prediction = model.predict([np.array([formatted_board]), np.array([attr])])
-            scenario["prediction"] = prediction[0]
+            formatted_boards.append(formatted_board)
+            attrs.append(attr)
 
+        prediction = model.predict([np.array(formatted_boards), np.array(attrs)])
+
+        for idx, scenario in enumerate(scenarios):
+            scenario["prediction"] = prediction[idx]
             final_scenarios.append(scenario)
-        else:
+    else:
+        for scenario in scenarios:
+            # profiling
+            if depth == 1:
+                bar.next()
             # recursively min-max
             final_scenario = min_max(scenario["board"], not is_white_to_move, depth - 1)
             final_scenario["move_sequence"].append(scenario["move_sequence"][0])
             final_scenarios.append(final_scenario)
 
-        # profiling
-        if depth == 1:
-            bar.next()
 
     # profiling
     if depth == 1:
@@ -94,14 +108,9 @@ def min_max(board, is_white_to_move, depth):
     final_scenario = final_scenarios_sorted[0]
     return final_scenario
 
-
-def find_best_scenario(board, is_white_to_move):
-    best_scenario = min_max(board, is_white_to_move, 1)
-    return 
-
 model = train.create_model()
-model = train.train(model)
-#model.load_weights("./checkpoints/cp-0019.ckpt")
+#model = train.train(model)
+model.load_weights("./checkpoints/test 14/cp-0200.ckpt")
 
 while True:
     print("input FEN")
@@ -113,6 +122,7 @@ while True:
 
     # format board for NN
     formatted_board, attr = representation.format_board(board)
+    print(attr)
     is_white_to_move = extraInfo["whoseMove"] == "w"
 
     if is_white_to_move:
@@ -120,7 +130,7 @@ while True:
         continue
 
     # predict
-    eval_init = model.predict([np.array([formatted_board, formatted_board]), np.array([attr, attr])])[0][0]
+    eval_init = model.predict([np.array([formatted_board]), np.array([attr])])[0][0]
     print("")
     print("init eval:\t", format_eval(eval_init), "pawns")
     print("")
