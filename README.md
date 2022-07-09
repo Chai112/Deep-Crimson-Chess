@@ -1,16 +1,12 @@
-# SHCR - Shallow Crimson
-### A deep learning chess analysis engine
-### by Chaidhat Chaimongkol
-Version 1 started on 2020, 26 December
-Version 2 started on 2022, 9 June
+# Deep Crimson
+### A deep learning chess analysis engine --- by Chaidhat Chaimongkol
+Deep Crimson 1 started on 2020, 26 December\
+Deep Crimson 2 started on 2022, 9 June
 
 # Promises
 - Program must evaluate moves by itself (no using Stockfish/other engines during runtime)
 - Program must not use book moves
 - No closely copying ideas/code from Stockfish or any other well-known engines
-
-Extra handicap opportunity:
-- The computer should have 1/10th of the time of the human.
 
 # Early Ideas/Concepts
 ## Concept 1: Brute Force/ Monte Carlo Search/Min-max/Alpha-beta pruning
@@ -67,8 +63,8 @@ At the moment, the program only evaluates black to move. The program can double 
 ### Concept 2.2.2: Feed attributes into FC layer
 Extra attributes such as the pieces remaining should be fed into the Fully Connected (FC) layer as a second input. See [this](https://pyimagesearch.com/2019/02/04/keras-multiple-inputs-and-mixed-data/) for reference.
 
-### Concept 2.1.1:
-Instead of one-hot encoding features as one grid for each piece and colour, encode them as 0 - no piece, -1 black, 1 white. Do not do this for the pawns though as their attack is one-facing: instead, make sure that they are two different grids. This reduces the matrix down to 8*8*(6+ 1) = 448 instead of 8*8*12 = 768 (58% of original) and also logically makes sense as the severity of positions should be around the same.
+### Concept 2.1.1: One-Hot Encoding Optimization
+Instead of one-hot encoding features as one grid for each piece and colour, encode them as 0 - no piece, -1 black, 1 white. Do not do this for the pawns though as their attack is one-facing: instead, make sure that they are two different grids. This reduces the matrix down to 8*8*(6+ 1) = 448 instead of 8*8*12 = 768 (58% of original) and also logically makes sense as the severity of positions should be around the same. This requires an activation function which can do negative numbers (e.g. tanh)
 
 
 ## Concept 3: Evaluate Best Next Move
@@ -83,7 +79,7 @@ Deep Q-Learning and stuff - looks hard!
 See https://www.youtube.com/watch?v=gWNeMs1Fb8I&list=PLXO45tsB95cIplu-fLMpUEEZTwrDNh6Ba&index=4
 
 # Development Logs
-### Test #1: Commit 20
+### Test 1: Commit 20
 ```
 dataset: chessData-endgame 
 time to train: ~10s
@@ -96,7 +92,7 @@ using concept 2, training for 50 epochs using a rather larger NN, it can start t
 
 Adding too many neurons causes the loss to stick at 0.175 and move very slowly (no! This is probably because it converged prematurely due to a bad initial condition. Other tests work well.)
 
-### Test #2
+### Test 2
 
 The same as the previous one but with altered dimensions
 ```
@@ -109,7 +105,7 @@ dimensions: 64x2 16x4
 ```
 This one proved to be somewhat the same as the old one, expect with a lower loss value (better). It can obviously tell which side is winning based on material. However, it cannot really accurately tell which side is winning by how much. For example, if white has a queen and black has only the king, it says it could be around 4 pawns up but if the black king moves around the board on the black side, its evaluation still says that white is ahead, but the value shifts by a lot. If black has a really obvious amount of material up, especially with rooks or queens, it will say that black is winning and vice versa and will state it is winning by quite a margin. Did not test the pawn rank thing, but will be interesting to try.
 
-### Test #3
+### Test 3
 The same as the previous one, but using sigmoid instead of reLU
 Loss converges slower than with a ReLU but not by a significant amount. Seems to have no immediate benefit and probably not worth it. I changed it back to ReLU and even the final layer of the output should be a ReLU instead of a sigmoid. Hopefully this makes the final evaluation less extreme.
 
@@ -123,8 +119,6 @@ final loss: ~4.2e-04
 final accuracy: 0.0341
 dimensions: 64x2 16x2 6x8
 ```
-
-It does not recognise the pawn being high up the rank unlike the previous ones. By being up in material, it can sense that it is winning or losing but again, it does not really mind about material. Maybe the positions in the dataset are not random enough? Then again, it is hard to tell whether it is better or worse than the previous models.
 
 ### Test 5
 Changed Batch size to 100 and many new things
@@ -311,14 +305,28 @@ training loss: 0.0071
 training accuracy: 0.5900
 test loss: 0.0174
 test accuracy: 0.5900
-time per evaluation: <0.01 s/move
+time per evaluation: 0.0001 s/move
 ```
 
 It works with fairly decent accuracy. At this moment in time, it is weaker than an average player (me) and takes longer to compute. However, it shows very significant improvements from previous methods.
 
-With min-maxing depth 3, it can recognise and punish severe blunders from its opponents. It cannot recognise illegal moves (such as during check) nor castling (on move 4, the computer asked to move Rf8, so I castled it instead). This led to some pretty interesting gameplay. A blunder by me on move 14 led to it taking my rook and being up three points. However, it is easy to lead it in a lot of the positions as it cannot recongise strong positions with that much accuracy yet. The depth search is quite low and may be the cause of why it can't detect the weak positions. Sometimes it plays moves which weaken its defense: it may be a good idea to have it play against itself and self train (with the help of stockfish) to recognise these pitfalls easier. For example, on move 6. it moves g6, most likely in anticipation for a fianchetto, but there is no bishop present. I believe that with self play, it will make this mistake and get punished by itself.
 
-FIRST GAME(!): Human - Deep Crimson (depth 3), 0-1
+**FIRST GAME(!): Chaidhat (human) - Deep Crimson (depth 3), 0-1**
 ```
 1. e4 Nf6 2. d3 e6 3. Nc3 Bb4 4. Bd2 O-O 5. Nf3 Re8 6. Be2 g6 7. Bh6 Ng4 8. Bg5 f6 9. h3 fxg5 10. hxg4 Qf6 11. Qd2 Bxc3 12. bxc3 h6 13. Rxh6 Kg7 14. Qxg5 Qxg5 15. Nxg5 Kxh6 16. Nf7+ Kg7 White resigns
 ```
+With min-maxing depth 3, it can recognise and punish severe blunders from its opponents. It cannot recognise illegal moves (such as during check) nor castling (on move 4, the computer asked to move Rf8, so I castled it instead). This led to some pretty interesting gameplay. A blunder by me on move 14 led to it taking my rook and being up three points. However, it is easy to lead it in a lot of the positions as it cannot recongise strong positions with that much accuracy yet. The depth search is quite low and may be the cause of why it can't detect the weak positions. Sometimes it plays moves which weaken its defense: it may be a good idea to have it play against itself and self train (with the help of stockfish) to recognise these pitfalls easier. For example, on move 6. it moves g6, most likely in anticipation for a fianchetto, but there is no bishop present. I believe that with self play, it will make this mistake and get punished by itself.
+
+**Game 2: Alex (human) - Deep Crimson (depth 3), 1-0**
+```
+1. b3 Nf6 2. f3 e6 3. h4 Ng8 4. d4 Nc6 5. e3 Nb4 6. h5 d6 7. Ba3 a5 8.
+Nc3 Ra7 9. Bb5+ c6 10. Rh4 Qxh4+ 11. g3 Qxh5 12. Bxc6+ bxc6 13. Nce2 Qd5 14. Rb1
+Nxa2 15. Bxd6 Qxd6 16. d5 Qxd5 17. Nd4 c5 18. Ra1 Rc7 19. Rxa2 cxd4
+20. exd4 Bc5 21. dxc5 Qxc5 22. c4 Ra7 23. Ne2 Rd7 24. Nd4 Rxd4 25. Rxa5 Qxc4 26.
+bxc4 Rxd1+ 27. Kxd1 Ne7 28. Ra8 Kd7 29. c5 Nd5 30. f4 Nxf4 31. gxf4 Bb7 32. Rxh8
+Bg2 33. Rxh7 Bf1 34. Rxg7 Kc6 35. Rxf7 Kxc5 36. Rc7+ Kb5 37. Rc2 Ka5 38. Ke1 Bd3
+39. Rd2 Bb5 40. Rd6 Ka4 41. Rxe6 Bf1 42. Kxf1 Kb5 43. f5
+```
+Game 2 showed the flaws of the neural network and some smaller details. For example, the data did not reset, resulting in subsequent calculations having to calculate the previous positions as well (fixed). In the beginning, it did not go for centre position and does a lot of repeat moves. It fails to develop its pieces. It does not seem to understand material: for example, 20. Bc5 sac'ing the bishop, 25. Qxc4 sac'ing the queen (!) instead of taking the opponent's queen, 32. sac'ing the rook for no reason and then failing to defend the pawns. It's endgame positional understanding is lacking as well as it does 36. Kb5, moving away from the centre pawns. It does not defend e6 pawn on 40. and then sac's a bishop for no reason. I'm guessing it is around 500 ELO.
+
+The conclusion is that the problem may be due to the dataset size (chess-small) being too small. In depth 4, it is already searching 430k position (after the bugfix) which means that this is twice the size of the chess database already. The best idea maybe for it to play against itself during training and have Stockfish evaluate its position and then try fit to that data. I believe the architecture and dimensions of the NN should be sufficient.
