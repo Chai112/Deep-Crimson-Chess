@@ -56,12 +56,52 @@ def format_eval(eval):
         prefix = "+"
     return prefix + f'{eval * MAX_EVAL * 0.01:.3}'
 
-count = 0
-def countt():
-    global count
-    count = count + 1
-    if count % 100 == 0:
-        print(count)
+moves_board = []
+moves_attr = []
+moves_eval = []
+
+# [formatted_board]: {attr: 0, prediction: 0}
+
+# scenario 1:
+#   move: [e4, e5]
+#   board: [[...]]
+#   children:
+#     scenario 2:
+#        ...
+
+def find_all_moves(board, is_white_to_move, depth):
+
+    possible_moves = chess.find_possible_moves(board, is_white_to_move)
+    scenarios = chess.generate_boards_from_moves(board, possible_moves)
+
+    for scenario in scenarios:
+        # format the board and set to hash table
+        if depth == 0:
+            formatted_board, attr = representation.format_board(scenario["board"])
+            formatted_board.flags.writeable = False
+            
+            global moves_board
+            global moves_attr
+
+            board_hash_idx = len(moves_board)
+
+            moves_board.append(formatted_board)
+            moves_attr.append(attr)
+
+            scenario["board_hash_idx"] = board_hash_idx
+
+        else:
+            # recursively find all moves
+            final_scenarios = find_all_moves(scenario["board"], not is_white_to_move, depth - 1)
+            scenario["children"] = []
+            for final_scenario in final_scenarios:
+                scenario["children"].append(final_scenario)
+
+    # return
+    return scenarios
+
+
+
 
 def min_max(board, is_white_to_move, depth):
 
@@ -78,7 +118,6 @@ def min_max(board, is_white_to_move, depth):
         formatted_boards = []
         attrs = []
         for scenario in scenarios:
-            #countt()
             formatted_board, attr = representation.format_board(scenario["board"])
             formatted_boards.append(formatted_board)
             attrs.append(attr)
@@ -108,6 +147,21 @@ def min_max(board, is_white_to_move, depth):
     final_scenario = final_scenarios_sorted[0]
     return final_scenario
 
+def find_best_move(board, is_white_to_move, max_depth):
+    # find next best move
+    starttime = timer()
+    final_scenarios = find_all_moves(board, is_white_to_move, max_depth)
+    search_time = timer()
+    print("search time:\t", f'{search_time-starttime:.3}', "s")
+    global moves_board
+    global moves_attr
+    global moves_eval
+    print(len(moves_board))
+    moves_eval = model.predict([np.array(moves_board), np.array(moves_attr)])
+    eval_time = timer()
+    print("eval time:\t", f'{eval_time - search_time:.3}', "s")
+    print("total time:\t", f'{eval_time - starttime:.3}', "s")
+
 model = train.create_model()
 #model = train.train(model)
 model.load_weights("./checkpoints/test 14/cp-0200.ckpt")
@@ -122,7 +176,6 @@ while True:
 
     # format board for NN
     formatted_board, attr = representation.format_board(board)
-    print(attr)
     is_white_to_move = extraInfo["whoseMove"] == "w"
 
     if is_white_to_move:
@@ -135,9 +188,9 @@ while True:
     print("init eval:\t", format_eval(eval_init), "pawns")
     print("")
 
-    # find next best move
-    starttime = timer()
-    best_scenario = min_max(board, is_white_to_move, 1)
+    find_best_move(board, is_white_to_move, 3)
+    exit()
+    #best_scenario = min_max(board, is_white_to_move, 1)
     eval_time = timer()
     print("eval time:\t", f'{eval_time - starttime:.3}', "s")
 
