@@ -1,4 +1,4 @@
-# Deep Crimson
+# SHCR - Shallow Crimson
 # Developed by Chaidhat Chaimongkol on 9 June, 2022
 
 # install anaconda
