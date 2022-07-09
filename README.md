@@ -1,16 +1,12 @@
-# SHCR - Shallow Crimson
-### A deep learning chess analysis engine
-### by Chaidhat Chaimongkol
-Version 1 started on 2020, 26 December
-Version 2 started on 2022, 9 June
+# Deep Crimson Chess Engine
+### A deep learning chess analysis engine --- by Chaidhat Chaimongkol
+Deep Crimson 1 started on 2020, 26 December\
+Deep Crimson 2 started on 2022, 9 June
 
 # Promises
 - Program must evaluate moves by itself (no using Stockfish/other engines during runtime)
 - Program must not use book moves
 - No closely copying ideas/code from Stockfish or any other well-known engines
-
-Extra handicap opportunity:
-- The computer should have 1/10th of the time of the human.
 
 # Early Ideas/Concepts
 ## Concept 1: Brute Force/ Monte Carlo Search/Min-max/Alpha-beta pruning
@@ -67,8 +63,8 @@ At the moment, the program only evaluates black to move. The program can double 
 ### Concept 2.2.2: Feed attributes into FC layer
 Extra attributes such as the pieces remaining should be fed into the Fully Connected (FC) layer as a second input. See [this](https://pyimagesearch.com/2019/02/04/keras-multiple-inputs-and-mixed-data/) for reference.
 
-### Concept 2.1.1:
-Instead of one-hot encoding features as one grid for each piece and colour, encode them as 0 - no piece, -1 black, 1 white. Do not do this for the pawns though as their attack is one-facing: instead, make sure that they are two different grids. This reduces the matrix down to 8*8*(6+ 1) = 448 instead of 8*8*12 = 768 (58% of original) and also logically makes sense as the severity of positions should be around the same.
+### Concept 2.1.1: One-Hot Encoding Optimization
+Instead of one-hot encoding features as one grid for each piece and colour, encode them as 0 - no piece, -1 black, 1 white. Do not do this for the pawns though as their attack is one-facing: instead, make sure that they are two different grids. This reduces the matrix down to 8*8*(6+ 1) = 448 instead of 8*8*12 = 768 (58% of original) and also logically makes sense as the severity of positions should be around the same. This requires an activation function which can do negative numbers (e.g. tanh)
 
 
 ## Concept 3: Evaluate Best Next Move
@@ -83,7 +79,7 @@ Deep Q-Learning and stuff - looks hard!
 See https://www.youtube.com/watch?v=gWNeMs1Fb8I&list=PLXO45tsB95cIplu-fLMpUEEZTwrDNh6Ba&index=4
 
 # Development Logs
-### Test #1: Commit 20
+### Test 1: Commit 20
 ```
 dataset: chessData-endgame 
 time to train: ~10s
@@ -96,7 +92,7 @@ using concept 2, training for 50 epochs using a rather larger NN, it can start t
 
 Adding too many neurons causes the loss to stick at 0.175 and move very slowly (no! This is probably because it converged prematurely due to a bad initial condition. Other tests work well.)
 
-### Test #2
+### Test 2
 
 The same as the previous one but with altered dimensions
 ```
@@ -109,7 +105,7 @@ dimensions: 64x2 16x4
 ```
 This one proved to be somewhat the same as the old one, expect with a lower loss value (better). It can obviously tell which side is winning based on material. However, it cannot really accurately tell which side is winning by how much. For example, if white has a queen and black has only the king, it says it could be around 4 pawns up but if the black king moves around the board on the black side, its evaluation still says that white is ahead, but the value shifts by a lot. If black has a really obvious amount of material up, especially with rooks or queens, it will say that black is winning and vice versa and will state it is winning by quite a margin. Did not test the pawn rank thing, but will be interesting to try.
 
-### Test #3
+### Test 3
 The same as the previous one, but using sigmoid instead of reLU
 Loss converges slower than with a ReLU but not by a significant amount. Seems to have no immediate benefit and probably not worth it. I changed it back to ReLU and even the final layer of the output should be a ReLU instead of a sigmoid. Hopefully this makes the final evaluation less extreme.
 
