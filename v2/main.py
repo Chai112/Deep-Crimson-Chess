@@ -1,4 +1,4 @@
-# SHCR - Shallow Crimson
+# Deep Crimson
 # Developed by Chaidhat Chaimongkol on 9 June, 2022
 
 # install anaconda
@@ -170,6 +170,13 @@ def min_max_old(board, is_white_to_move, depth):
     return final_scenario
 
 def find_best_move(board, is_white_to_move, max_depth):
+    global moves_board
+    global moves_attr
+    global moves_eval
+
+    moves_board = []
+    moves_attr = []
+    moves_eval = []
     # find next best move
     print("finding best move...")
     starttime = timer()
@@ -178,9 +185,6 @@ def find_best_move(board, is_white_to_move, max_depth):
 
     print("search time:\t", f'{search_time-starttime:.3}', "s")
 
-    global moves_board
-    global moves_attr
-    global moves_eval
     print("moves found:\t", len(moves_board), "positions")
 
     moves_eval = model.predict([np.array(moves_board), np.array(moves_attr)])
@@ -195,7 +199,7 @@ def find_best_move(board, is_white_to_move, max_depth):
 
 model = train.create_model()
 #model = train.train(model)
-model.load_weights("./checkpoints/test 14/cp-0200.ckpt")
+model.load_weights("./checkpoints/test 15/cp-0130.ckpt")
 
 while True:
     print("input FEN")
@@ -219,7 +223,7 @@ while True:
     print("init eval:\t", format_eval(eval_init), "pawns")
     print("")
 
-    best_scenario = find_best_move(board, is_white_to_move, 2)
+    best_scenario = find_best_move(board, is_white_to_move, 3)
     #best_scenario = min_max(board, is_white_to_move, 1)
 
     best_move_seq = best_scenario["move_sequence"]

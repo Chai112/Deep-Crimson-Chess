@@ -10,7 +10,7 @@ from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 
 TESTING_SIZE = 100
-EPOCHS = 200
+EPOCHS = 300
 DATASET = "../datasets/chessData-small.csv"
 MAX_EVAL = 2000 # in centipawns
 
@@ -18,11 +18,11 @@ def create_model():
     inputA = tf.keras.Input(shape=(8, 8, 6))
     inputB = tf.keras.Input(shape=(5,))
 
-    x = layers.Conv2D(16, 3, activation='tanh', padding='same')(inputA)
+    x = layers.Conv2D(32, 3, activation='tanh', padding='same')(inputA)
     x = layers.MaxPooling2D((2, 2), padding='same')(x)
-    x = layers.Conv2D(32, 3, activation='tanh', padding='same')(x)
+    x = layers.Conv2D(64, 3, activation='tanh', padding='same')(x)
     x = layers.MaxPooling2D((2, 2), padding='same')(x)
-    x = layers.Conv2D(32, 3, activation='tanh', padding='same')(x)
+    x = layers.Conv2D(64, 3, activation='tanh', padding='same')(x)
     x = layers.Flatten()(x)
     x = tf.keras.Model(inputs=inputA, outputs=x)
 
@@ -32,8 +32,8 @@ def create_model():
     # combine the output of the two branches
     combined = layers.concatenate([x.output, inputB])
 
-    fc = layers.Dense(16, activation='tanh')(combined)
-    fc = layers.Dense(4, activation='tanh')(fc)
+    fc = layers.Dense(64, activation='tanh')(combined)
+    fc = layers.Dense(16, activation='tanh')(fc)
     fc = layers.Dense(1)(fc)
     model = tf.keras.Model(inputs= [x.input, inputB], outputs = fc)
     model.summary()
