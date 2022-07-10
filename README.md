@@ -1,5 +1,5 @@
 # Deep Crimson
-### A deep learning chess analysis engine --- by Chaidhat Chaimongkol
+### A deep learning chess analysis engine -- by Chaidhat Chaimongkol
 Deep Crimson 1 started on 2020, 26 December\
 Deep Crimson 2 started on 2022, 9 June
 
@@ -330,3 +330,17 @@ Bg2 33. Rxh7 Bf1 34. Rxg7 Kc6 35. Rxf7 Kxc5 36. Rc7+ Kb5 37. Rc2 Ka5 38. Ke1 Bd3
 Game 2 showed the flaws of the neural network and some smaller details. For example, the data did not reset, resulting in subsequent calculations having to calculate the previous positions as well (fixed). In the beginning, it did not go for centre position and does a lot of repeat moves. It fails to develop its pieces. It does not seem to understand material: for example, 20. Bc5 sac'ing the bishop, 25. Qxc4 sac'ing the queen (!) instead of taking the opponent's queen, 32. sac'ing the rook for no reason and then failing to defend the pawns. It's endgame positional understanding is lacking as well as it does 36. Kb5, moving away from the centre pawns. It does not defend e6 pawn on 40. and then sac's a bishop for no reason. I'm guessing it is around 500 ELO.
 
 The conclusion is that the problem may be due to the dataset size (chess-small) being too small. In depth 4, it is already searching 430k position (after the bugfix) which means that this is twice the size of the chess database already. The best idea maybe for it to play against itself during training and have Stockfish evaluate its position and then try fit to that data. I believe the architecture and dimensions of the NN should be sufficient.
+
+### Test 15
+Minor changes
+* Changed dimensions
+```
+dataset: chessData-small
+time to train: 7 hrs
+epochs: 130
+training loss: 0.0057
+training accuracy: 0.5629
+test loss: 0.0189
+test accuracy: 0.6000
+time per evaluation: 0.0004 s/move
+```
