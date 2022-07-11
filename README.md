@@ -1,5 +1,5 @@
 # Deep Crimson
-### A deep learning chess analysis engine -- by Chaidhat Chaimongkol
+### A deep neural network chess analysis engine -- by Chaidhat Chaimongkol
 Deep Crimson 1 started on 2020, 26 December\
 Deep Crimson 2 started on 2022, 9 June
 

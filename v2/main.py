@@ -124,51 +124,6 @@ def min_max(scenarios, is_white_to_move, depth):
     final_scenario = final_scenarios_sorted[0]
     return final_scenario
 
-
-def min_max_old(board, is_white_to_move, depth):
-
-    possible_moves = chess.find_possible_moves(board, is_white_to_move)
-    scenarios = chess.generate_boards_from_moves(board, possible_moves)
-
-    final_scenarios = []
-
-    # profiling
-    if depth == 1:
-        bar = Bar('depth ' + str(depth), max=len(scenarios))
-
-    if depth == 0:
-        formatted_boards = []
-        attrs = []
-        for scenario in scenarios:
-            formatted_board, attr = representation.format_board(scenario["board"])
-            formatted_boards.append(formatted_board)
-            attrs.append(attr)
-
-        prediction = model.predict([np.array(formatted_boards), np.array(attrs)])
-
-        for idx, scenario in enumerate(scenarios):
-            scenario["prediction"] = prediction[idx]
-            final_scenarios.append(scenario)
-    else:
-        for scenario in scenarios:
-            # profiling
-            if depth == 1:
-                bar.next()
-            # recursively min-max
-            final_scenario = min_max(scenario["board"], not is_white_to_move, depth - 1)
-            final_scenario["move_sequence"].append(scenario["move_sequence"][0])
-            final_scenarios.append(final_scenario)
-
-
-    # profiling
-    if depth == 1:
-        bar.finish()
-
-    # sort from most favourable to least favourable
-    final_scenarios_sorted = sorted(final_scenarios, key=itemgetter('prediction'), reverse= is_white_to_move) 
-    final_scenario = final_scenarios_sorted[0]
-    return final_scenario
-
 def find_best_move(board, is_white_to_move, max_depth):
     global moves_board
     global moves_attr
@@ -223,7 +178,7 @@ while True:
     print("init eval:\t", format_eval(eval_init), "pawns")
     print("")
 
-    best_scenario = find_best_move(board, is_white_to_move, 3)
+    best_scenario = find_best_move(board, is_white_to_move, 2)
     #best_scenario = min_max(board, is_white_to_move, 1)
 
     best_move_seq = best_scenario["move_sequence"]
