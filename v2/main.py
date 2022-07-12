@@ -116,10 +116,13 @@ def min_max(scenarios, is_white_to_move, depth):
         else:
             # recursively min-max
             final_scenario = min_max(scenario["children"], not is_white_to_move, depth - 1)
-            final_scenario["move_sequence"].append(scenario["move"])
-            final_scenarios.append(final_scenario)
+            if not final_scenario == 0:
+                final_scenario["move_sequence"].append(scenario["move"])
+                final_scenarios.append(final_scenario)
 
     # sort from most favourable to least favourable
+    if len(final_scenarios) == 0:
+        return 0
     final_scenarios_sorted = sorted(final_scenarios, key=itemgetter('prediction'), reverse= is_white_to_move) 
     final_scenario = final_scenarios_sorted[0]
     return final_scenario
