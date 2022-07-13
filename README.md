@@ -80,8 +80,8 @@ Using dataset 1, train it to compare two moves and then output how confident the
 Deep Q-Learning and stuff - looks hard!
 See https://www.youtube.com/watch?v=gWNeMs1Fb8I&list=PLXO45tsB95cIplu-fLMpUEEZTwrDNh6Ba&index=4
 
-# Development Logs
-### Test 1: Commit 20
+# Development Log
+### Test 1: Neural Network 1: Commit 20
 ```
 dataset: chessData-endgame 
 time to train: ~10s
@@ -94,7 +94,7 @@ using concept 2, training for 50 epochs using a rather larger NN, it can start t
 
 Adding too many neurons causes the loss to stick at 0.175 and move very slowly (no! This is probably because it converged prematurely due to a bad initial condition. Other tests work well.)
 
-### Test 2
+### Neural Net 2
 
 The same as the previous one but with altered dimensions
 ```
@@ -107,11 +107,11 @@ dimensions: 64x2 16x4
 ```
 This one proved to be somewhat the same as the old one, expect with a lower loss value (better). It can obviously tell which side is winning based on material. However, it cannot really accurately tell which side is winning by how much. For example, if white has a queen and black has only the king, it says it could be around 4 pawns up but if the black king moves around the board on the black side, its evaluation still says that white is ahead, but the value shifts by a lot. If black has a really obvious amount of material up, especially with rooks or queens, it will say that black is winning and vice versa and will state it is winning by quite a margin. Did not test the pawn rank thing, but will be interesting to try.
 
-### Test 3
+### Neural Net 3
 The same as the previous one, but using sigmoid instead of reLU
 Loss converges slower than with a ReLU but not by a significant amount. Seems to have no immediate benefit and probably not worth it. I changed it back to ReLU and even the final layer of the output should be a ReLU instead of a sigmoid. Hopefully this makes the final evaluation less extreme.
 
-### Test 4
+### Neural Net 4
 Different dimensions to Test 3
 ```
 dataset: chessData-endgame 
@@ -122,7 +122,7 @@ final accuracy: 0.0341
 dimensions: 64x2 16x2 6x8
 ```
 
-### Test 5
+### Neural Net 5
 Changed Batch size to 100 and many new things
 ```
 dataset: chessData-small
@@ -136,7 +136,7 @@ dimensions: 64x4 16x4 8x8
 ```
 Performs really badly! It seems to have no concept of who is winning or losing. It seems something is wrong with the code
 
-### Test 6
+### Neural Net 6
 Fixed errors with the code. Now trying tanh instead of ReLU and using negative numbers. Blank squares are still 0.0, not -1
 ```
 dataset: chessData-verysmall
@@ -151,7 +151,7 @@ dimensions: 64x2 16x2 8x4
 ```
 Not bad. It can evaluate positions of a full board fairly well, although still makes mistakes and doesnt not evaluate the bishop as 3 points, for example.
 
-### Test 7
+### Neural Net 7
 Removed the extra info thing as it is not quite useful
 ```
 dataset: chessData-verysmall
@@ -166,7 +166,7 @@ dimensions: 64x2 16x2 8x4
 ```
 Appears to work very well in telling what side is which! But this is at a quick glance. For more nuanced positions, it still struggles a bit.
 
-### Test 8
+### Neural Net 8
 Ran with small dataset overnight. It stopped prematurely. The settings were lost so a lot of the values are unknown.
 ```
 dataset: chessData-small
@@ -181,7 +181,7 @@ dimensions: 64x2 16x2 8x4
 ```
 very cool! Works fairly well with everything. Can analyze endgames and normal games but at some points it cannot state how much white or black is winning by in the endgame.
 
-### Test 8 Bravo
+### Neural Net 8 Bravo
 Ran with small dataset overnight.
 ```
 dataset: chessData-small
@@ -196,7 +196,7 @@ dimensions: 64x2 16x2 8x4
 ```
 again, very cool. However, in the opening it cannot precisely determine who is winning. I am starting to realise that in context, the absolute evaluations do not mean a lot. Actually, the relative evaluation between moves determine which move is best to be played (black is trying to minimize the evaluation) so the lowest number should be the best next move: this means the absolute evaluation accuracy is not as relevant. The engine struggles to identify moves which results in the immediate taking of the piece (it says a good move is black bishop infront of a white pawn) Additionally, proposed concept 2.0.1 and 2.2.
 
-### Test 9
+### Neural Net 9
 Major changes were made to the encoding of features
 * allow white to move to be considered
 * material counts be considered
@@ -216,7 +216,7 @@ dimensions: 16x1 8x1 4x2
 ```
 Loss seems too high, probably because of the lack of neurons. The training time seems significantly less, probably due to the lack of dimensions and inputs, despite almost doubling the training set size (200k -> 400k) because white to move is now accepted. More training data, lower batch sizes or larger dimensions may be a good idea. On some testing, it seems more accurate than previous models on positions. Positions were taken from games and pawns and structures were moved (but not taken away or added). The direction of increase/decrease in evaluation matched Stockfish. There is still doubt that previous models overfitted to training set due to the sheer size of training set, but this model does seem to perform well but may risk underfitting due to lack of hidden layers. A VERY good idea is to only change ONE variables at a time (ceteris paribus) and do not mess with so many variables since it is difficult to tell how the NN improved.
 
-### Test 10
+### Neural Net 10
 Same as Test 9 but with different dimensions
 ```
 dataset: chessData-small
@@ -229,7 +229,7 @@ test accuracy: 0.12
 dimensions: 64x1 32x1 16x2 4x2
 ```
 
-### Test 11
+### Neural Net 11
 Major changes
 * replace with Convolutional Neural Network!!
 * white to move are not considered
@@ -265,7 +265,7 @@ time per evaluation: 0.03 s/move (33 moves/s)
 ```
 Does not seem to go for centre control at all. It does not seem to mind losing material either. It does recognize more pattern based moves such as fianchetto'ing the bishop, which is nice. It seems like there are too many parameters and it is overfitting. Time per evaluation is a bit high. It can only feasibly do around a depth 2 evaluation.
 
-### Test 12
+### Neural Net 12
 Major bug fix
 * the representation was incorrect: everything was set to 0.5, but black pieces were -1 and white were +1. This fed into a ReLU NN, which cannot take in negative numbers. TanH is used instead now and is set to 0.
 * renamed final loss to training loss and accuracy
@@ -294,7 +294,7 @@ time per evaluation: 0.03 s/move
 ```
 Very high accuracy in the datasets, but could be due to the small dataset. The model goes for centre control at the start and is very good at detecting where to move which pieces. It does not go very much for material still, as a pawn will still take another centre pawn instead of a knight on the side. This is a far greater improvement than before. Time per evaluation is still a bit high.
 
-### Test 14
+### Neural Net 14
 Major changes
 * added multiple inputs (board + attr (materials))
 * batching predictions at depth 0
@@ -321,20 +321,13 @@ With min-maxing depth 3, it can recognise and punish severe blunders from its op
 
 **Game 2: Alex (human) - Deep Crimson (depth 3 ply), 1-0**
 ```
-1. b3 Nf6 2. f3 e6 3. h4 Ng8 4. d4 Nc6 5. e3 Nb4 6. h5 d6 7. Ba3 a5 8.
-Nc3 Ra7 9. Bb5+ c6 10. Rh4 Qxh4+ 11. g3 Qxh5 12. Bxc6+ bxc6 13. Nce2 Qd5 14. Rb1
-Nxa2 15. Bxd6 Qxd6 16. d5 Qxd5 17. Nd4 c5 18. Ra1 Rc7 19. Rxa2 cxd4
-20. exd4 Bc5 21. dxc5 Qxc5 22. c4 Ra7 23. Ne2 Rd7 24. Nd4 Rxd4 25. Rxa5 Qxc4 26.
-bxc4 Rxd1+ 27. Kxd1 Ne7 28. Ra8 Kd7 29. c5 Nd5 30. f4 Nxf4 31. gxf4 Bb7 32. Rxh8
-Bg2 33. Rxh7 Bf1 34. Rxg7 Kc6 35. Rxf7 Kxc5 36. Rc7+ Kb5 37. Rc2 Ka5 38. Ke1 Bd3
-39. Rd2 Bb5 40. Rd6 Ka4 41. Rxe6 Bf1 42. Kxf1 Kb5 43. f5
+1. b3 Nf6 2. f3 e6 3. h4 Ng8 4. d4 Nc6 5. e3 Nb4 6. h5 d6 7. Ba3 a5 8. Nc3 Ra7 9. Bb5+ c6 10. Rh4 Qxh4+ 11. g3 Qxh5 12. Bxc6+ bxc6 13. Nce2 Qd5 14. Rb1 Nxa2 15. Bxd6 Qxd6 16. d5 Qxd5 17. Nd4 c5 18. Ra1 Rc7 19. Rxa2 cxd4 20. exd4 Bc5 21. dxc5 Qxc5 22. c4 Ra7 23. Ne2 Rd7 24. Nd4 Rxd4 25. Rxa5 Qxc4 26. bxc4 Rxd1+ 27. Kxd1 Ne7 28. Ra8 Kd7 29. c5 Nd5 30. f4 Nxf4 31. gxf4 Bb7 32. Rxh8 Bg2 33. Rxh7 Bf1 34. Rxg7 Kc6 35. Rxf7 Kxc5 36. Rc7+ Kb5 37. Rc2 Ka5 38. Ke1 Bd3 39. Rd2 Bb5 40. Rd6 Ka4 41. Rxe6 Bf1 42. Kxf1 Kb5 43. f5
 ```
 Game 2 showed the flaws of the neural network and some smaller details. For example, the data did not reset, resulting in subsequent calculations having to calculate the previous positions as well (fixed). In the beginning, it did not go for centre position and does a lot of repeat moves. It fails to develop its pieces. It does not seem to understand material: for example, 20. Bc5 sac'ing the bishop, 25. Qxc4 sac'ing the queen (!) instead of taking the opponent's queen, 32. sac'ing the rook for no reason and then failing to defend the pawns. It's endgame positional understanding is lacking as well as it does 36. Kb5, moving away from the centre pawns. It does not defend e6 pawn on 40. and then sac's a bishop for no reason. I'm guessing it is around 500 ELO.
 
 The conclusion is that the problem may be due to the dataset size (chess-small) being too small. In depth 4, it is already searching 430k position (after the bugfix) which means that this is twice the size of the chess database already. The best idea maybe for it to play against itself during training and have Stockfish evaluate its position and then try fit to that data. I believe the architecture and dimensions of the NN should be sufficient.
 
-### Test 15
-Minor changes
+### Neural Net 15
 * Changed dimensions
 ```
 dataset: chessData-small
@@ -372,5 +365,6 @@ Another note is that the engine may not be able to play white AND black with the
 
 ```
 1Q6/8/6k1/8/2K5/8/8/1q6 b - - 0 1
-``` engine recommends b1->e4, not taking the opponent's queen(!)
+``` 
+engine recommends b1->e4, not taking the opponent's queen(!)
 Sometimes the engine cannot evaluate material based chess at all.
