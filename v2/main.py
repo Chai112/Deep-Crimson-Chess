@@ -70,10 +70,6 @@ while True:
     formatted_board, attr = representation.format_board(board)
     is_white_to_move = extraInfo["whoseMove"] == "w"
 
-    if is_white_to_move:
-        print("black to move only")
-        continue
-
     # predict
     eval_init = model.predict([np.array([formatted_board]), np.array([attr])])[0][0]
     print("")
@@ -81,7 +77,7 @@ while True:
     print("")
 
     # find best move
-    best_scenario = play.find_best_move(model, board, is_white_to_move, 2)
+    best_scenario = play.find_best_move(model, board, is_white_to_move, 1)
 
     best_move_seq = best_scenario["move_sequence"]
     best_move_seq.reverse()
