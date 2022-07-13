@@ -368,3 +368,13 @@ Another note is that the engine may not be able to play white AND black with the
 ``` 
 engine recommends b1->e4, not taking the opponent's queen(!)
 Sometimes the engine cannot evaluate material based chess at all.
+
+**Game 5: Deep Crimson (depth 2 ply) - Deep Crimson (depth 2 ply) 0-1**
+```
+1. f4 e6 2. f5 Qh4+ 3. g3 Qd4 4. fxe6 fxe6 5. Nf3 Qg4 6. b3 Bc5 7. Ne5 Qf5 8. Nxd7 Bf2# 0-1
+```
+Added functionality to play itself. It plays really badly!
+**Game 5: Deep Crimson (depth 3 ply) - Deep Crimson (depth 3 ply) 0-1**
+```
+1. h4 e5 2. Na3 Bc5 3. Nf3 e4 4. Ne5 Nf6 5. Nac4 Bd4 6. Nd6+ cxd6 7. Nxf7 Kxf7 8. e3 Bc5 9. b4 Bxb4 10. Bb5 Rg8 11. Qh5+ Nxh5 12. Bc4+ Ke7 13. O-O Bxd2 14. Bb2 b5 15. Rae1 bxc4 16. g3 a5 17. g4 h6 18. gxh5 Qf8 19. Re2 Na6 20. Kh2 c3 21. Rxd2 cxd2 22. f3 exf3 23. Rxf3 Qxf3 24. a4 Qg4 25. Kh1 d1=Q+ 26. Kh2 Qdg1# 0-1
+```

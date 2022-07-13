@@ -95,7 +95,7 @@ def min_max(scenarios, is_white_to_move, depth):
 #     scenario 2:
 #        ...
 
-def find_best_move(model, board, is_white_to_move, max_depth):
+def find_best_move(model, board, is_white_to_move, max_depth, verbose = False):
     global moves_board
     global moves_attr
     global moves_eval
@@ -104,23 +104,38 @@ def find_best_move(model, board, is_white_to_move, max_depth):
     moves_attr = []
     moves_eval = []
     # find next best move
-    print("finding best move...")
+    if verbose:
+        print("finding best move...")
     starttime = timer()
     final_scenarios = find_all_moves(board, is_white_to_move, max_depth)
     search_time = timer()
 
-    print("search time:\t", f'{search_time-starttime:.3}', "s")
-
-    print("moves found:\t", len(moves_board), "positions")
+    if len(moves_board) == 0:
+        return []
 
     moves_eval = model.predict([np.array(moves_board), np.array(moves_attr)])
     eval_time = timer()
-    print("eval time:\t", f'{eval_time - search_time:.3}', "s")
+
+    if verbose:
+        print("search time:\t", f'{search_time-starttime:.3}', "s")
+        print("moves found:\t", len(moves_board), "positions")
+        print("eval time:\t", f'{eval_time - search_time:.3}', "s")
+
     best_scenario = min_max(final_scenarios, is_white_to_move, max_depth)
-    if best_scenario == 0:
-        print("checkmate")
+
     minmax_time = timer()
-    print("minmax time:\t", f'{minmax_time - eval_time:.3}', "s")
-    print("total time:\t", f'{eval_time - starttime:.3}', "s")
-    print("eval rate:\t", len(moves_board) / (eval_time - starttime), "moves/s")
+    if verbose:
+        print("minmax time:\t", f'{minmax_time - eval_time:.3}', "s")
+        print("total time:\t", f'{eval_time - starttime:.3}', "s")
+        print("eval rate:\t", len(moves_board) / (eval_time - starttime), "moves/s")
+        eval_post = float(best_scenario["prediction"])
+        print("post eval:\t", format_eval(eval_post), "pawns")
+        print("delta eval:\t", format_eval(eval_post - eval_init), "pawns")
     return best_scenario
+
+def do_best_move(board, best_scenario):
+    best_move_seq = best_scenario["move_sequence"]
+    best_move_seq.reverse()
+    move = [{"move": best_move_seq[0]}]
+    new_board = chess.generate_boards_from_moves(board, move)[0]["board"]
+    return new_board, 

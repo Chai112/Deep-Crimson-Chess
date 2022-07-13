@@ -31,6 +31,7 @@ import representation
 import matplotlib.pyplot as plt
 
 MAX_EVAL = 2000 # in centipawns
+START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 def displayBoard(board, extraInfo):
     for y in range(8):
@@ -62,6 +63,10 @@ while True:
     print("input FEN")
     userFen = input()
 
+    # if input is empty, default to default board
+    if userFen == "":
+        userFen = START
+
     # convert FEN to board
     board, extraInfo = representation.evaluateFenIntoBoard(userFen)
     displayBoard(board, extraInfo)
@@ -76,25 +81,45 @@ while True:
     print("init eval:\t", format_eval(eval_init), "pawns")
     print("")
 
-    # find best move
-    best_scenario = play.find_best_move(model, board, is_white_to_move, 1)
+    i = 0
+    while i < 50:
+        print(str(i + 1) + ". ", end = "")
+        j = 0
+        while j < 2:
+            # find best move
+            best_scenario = play.find_best_move(model, board, is_white_to_move, 1)
+            if len(best_scenario) == 0:
+                if not is_white_to_move:
+                    print("1-0")
+                    i = 1000000
+                    break
+                else:
+                    i = 1000000
+                    print("0-1")
+                    break
+            best_move_seq = best_scenario["move_sequence"]
+            best_move_seq.reverse()
+            move = [{"move": best_move_seq[0]}]
+            board = chess.generate_boards_from_moves(board, move)[0]["board"]
+            moveStr = str(str(chess.coord_to_human(best_move_seq[0]["from"])) + str(chess.coord_to_human(best_move_seq[0]["to"])))
+            is_white_to_move = not is_white_to_move
+            print(moveStr + " ", end = "")
+            j += 1
+        
+        print("")
+        i += 1
+        #print(displayBoard(board,{}))
 
-    best_move_seq = best_scenario["move_sequence"]
-    best_move_seq.reverse()
-    eval_post = float(best_scenario["prediction"])
-    print("post eval:\t", format_eval(eval_post), "pawns")
-    print("delta eval:\t", format_eval(eval_post - eval_init), "pawns")
-
-    print("")
-    print("BEST MOVE:")
-    for best_move in best_move_seq:
-        if (best_move == "white checkmated" 
-        or best_move == "black checkmated" 
-        or best_move == "stalemate"):
-            print(best_move)
-        else:
-            move_from = best_move["from"]
-            move_to = best_move["to"]
-            print(chess.coord_to_human(move_from), "->", chess.coord_to_human(move_to))
+    #print("")
+    #print("BEST MOVE:")
+    #for best_move in best_move_seq:
+    #    if (best_move == "white checkmated" 
+    #    or best_move == "black checkmated" 
+    #    or best_move == "stalemate"):
+    #        print(best_move)
+    #    else:
+    #        move_from = best_move["from"]
+    #        move_to = best_move["to"]
+    #        print(chess.coord_to_human(move_from), "->", chess.coord_to_human(move_to))
 
     print("\n\n")

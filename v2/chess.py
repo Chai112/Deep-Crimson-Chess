@@ -3,9 +3,7 @@ import copy
 BLANK_PIECE = '.'
 
 def add_move(possible_moves, from_coord, to_coord):
-    if not from_coord in possible_moves:
-        possible_moves[from_coord] = []
-    possible_moves[from_coord].append(to_coord)
+    possible_moves.append({"move": {"from": from_coord, "to": to_coord}})
 
 def is_enemy(piece, is_white_to_move):
     # xor
@@ -81,7 +79,7 @@ def find_possible_moves(board, is_white_to_move, check_for_checks = True):
     else:
         king_in_check = False
 
-    possible_moves = {}
+    possible_moves = []
     for y in range(8):
         for x in range(8):
             piece = board[y][x].decode()
@@ -337,31 +335,23 @@ def find_possible_moves(board, is_white_to_move, check_for_checks = True):
                                 if can_castle:
                                     add_move(possible_moves, (y, x), (y, x - 2))
 
-
-    possible_moves_final = []
-    for move_from in possible_moves:
-        for move_to in possible_moves[move_from]:
-            possible_moves_final.append({"move": {"from": move_from, "to": move_to}})
-        
-    # check if moves are legal => only a concern if King is in check
-    #print("is king in check?", king_in_check)
     if check_for_checks:
-        scenarios = generate_boards_from_moves(board, possible_moves_final)
-        possible_moves_final = []
+        scenarios = generate_boards_from_moves(board, possible_moves)
+        possible_moves = []
         for scenario in scenarios:
             king_still_in_check, _ = is_king_in_check(scenario["board"], is_white_to_move)
             if not king_still_in_check:
                 #print(coord_to_human(scenario["move"]["from"]), "->", coord_to_human(scenario["move"]["to"]))
-                possible_moves_final.append({"move": {"from": scenario["move"]["from"], "to": scenario["move"]["to"]}})
+                possible_moves.append({"move": {"from": scenario["move"]["from"], "to": scenario["move"]["to"]}})
     
     # check for checkmate
-    if len(possible_moves_final) == 0:
+    if len(possible_moves) == 0:
         if king_in_check:
             return "checkmate"
         else:
             return "stalemate"
 
-    return possible_moves_final
+    return possible_moves
 
 def generate_boards_from_moves(board, possible_moves):
     scenarios = []
@@ -373,10 +363,10 @@ def generate_boards_from_moves(board, possible_moves):
         piece = new_board[move_from[0]][move_from[1]].decode()
 
         # is pawn promoting?
-        if piece == "p" and move_to[1] == 7:
+        if piece == "p" and move_to[0] == 7:
             piece = "q"
-        if piece == "P" and move_to[1] == 0:
-            piece = "Q"
+        if piece == "P" and move_to[0] == 0:
+            piece = "K"
 
         new_board[move_from[0]][move_from[1]] = BLANK_PIECE
         new_board[move_to[0]][move_to[1]] = piece
