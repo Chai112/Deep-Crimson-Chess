@@ -372,6 +372,12 @@ def generate_boards_from_moves(board, possible_moves):
         move_to = move["move"]["to"]
         piece = new_board[move_from[0]][move_from[1]].decode()
 
+        # is pawn promoting?
+        if piece == "p" and move_to[1] == 7:
+            piece = "q"
+        if piece == "P" and move_to[1] == 0:
+            piece = "Q"
+
         new_board[move_from[0]][move_from[1]] = BLANK_PIECE
         new_board[move_to[0]][move_to[1]] = piece
 

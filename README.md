@@ -60,6 +60,8 @@ Chuck it in a CNN and hopefully it works. A test CNN project would be nice to st
 ### Concept 2.2.1: Evaluate white/black to move
 At the moment, the program only evaluates black to move. The program can double its training data by simply reversing the board and reversing the signs of the pieces: black becomes white and vice versa. This also would allow the engine to play as white as well
 
+(see Test 15 for problems)
+
 ### Concept 2.2.2: Feed attributes into FC layer
 Extra attributes such as the pieces remaining should be fed into the Fully Connected (FC) layer as a second input. See [this](https://pyimagesearch.com/2019/02/04/keras-multiple-inputs-and-mixed-data/) for reference.
 
@@ -357,4 +359,18 @@ Not bad, although due to the illegal move situation, it might be a good idea to 
 ```
 1. d4 d5 2. Nf3 Bf5 3. e3 Nc6 4. Nc3 e6 5. h3 b6 6. g4 Bg6 7. Bd3 Bb4 8. Ne5 Nxe5 9. dxe5 Bxc3+ 10. bxc3 a6 11. h4 Bxd3 12. cxd3 Kf8 13. Ba3+ c5 14. h5
 ```
-Game 4 is after the illegal move situation has been fixed. It is signifcantly better now. However, its performance dropped from 2,500 moves/s to only 1,700 moves/s (32% decrease) for depth 3 ply.
+Game 4 is after the illegal move situation has been fixed. It is signifcantly better now. However, its performance dropped from 2,500 moves/s to only 1,700 moves/s (32% decrease) for depth 3 ply. There may be more efficient ways of determining this but leaves room for bugs (i.e. pins were not detected in a previous method)
+
+A brief calculation reveals that over a six hour training session, assuming it takes one minute per move, it can only make 360 moves or about under 10 games. This means that it only has around 360*2 = 720 data to train on, as opposed to 400,000 points over many epochs. This makes self play not a very valid method of training the engine. A better method may be to take master games and train it based on that.
+
+If a depth 3 ply evaluation is used, taking around 10s per move, it can do around 4000 datasets.
+If a depth 2 ply evaluation is used, taking around 0.5s per move, it can do around 43000 datasets.
+
+But nothing comes close to just using training data as that is much more rapid and grows over many epochs. Although it succumbs to the pitfalls mentioned by previous remarks.
+
+Another note is that the engine may not be able to play white AND black with the method proposed in 2.2.1, as swapping the positions and colour would not entirely compensate for the style of play. This is because black and white have their king and queens swapped. Different style of plays may be expected.
+
+```
+1Q6/8/6k1/8/2K5/8/8/1q6 b - - 0 1
+``` engine recommends b1->e4, not taking the opponent's queen(!)
+Sometimes the engine cannot evaluate material based chess at all.
