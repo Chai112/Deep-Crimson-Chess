@@ -311,13 +311,13 @@ time per evaluation: 0.0001 s/move (10,000 moves/s)
 It works with fairly decent accuracy. At this moment in time, it is weaker than an average player (me) and takes longer to compute. However, it shows very significant improvements from previous methods.
 
 
-**FIRST GAME(!): Chaidhat (human) - Deep Crimson (depth 3)**
+**FIRST GAME(!): Chaidhat (human) - Deep Crimson (depth 3 ply)**
 ```
 1. e4 Nf6 2. d3 e6 3. Nc3 Bb4 4. Bd2 O-O 5. Nf3 Re8 6. Be2 g6 7. Bh6 Ng4 8. Bg5 f6 9. h3 fxg5 10. hxg4 Qf6 11. Qd2 Bxc3 12. bxc3 h6 13. Rxh6 Kg7 14. Qxg5 Qxg5 15. Nxg5 Kxh6 16. Nf7+ Kg7
 ```
 With min-maxing depth 3, it can recognise and punish severe blunders from its opponents. It cannot recognise illegal moves (such as during check) nor castling (on move 4, the computer asked to move Rf8, so I castled it instead). This led to some pretty interesting gameplay. A blunder by me on move 14 led to it taking my rook and being up three points. However, it is easy to lead it in a lot of the positions as it cannot recongise strong positions with that much accuracy yet. The depth search is quite low and may be the cause of why it can't detect the weak positions. Sometimes it plays moves which weaken its defense: it may be a good idea to have it play against itself and self train (with the help of stockfish) to recognise these pitfalls easier. For example, on move 6. it moves g6, most likely in anticipation for a fianchetto, but there is no bishop present. I believe that with self play, it will make this mistake and get punished by itself.
 
-**Game 2: Alex (human) - Deep Crimson (depth 3), 1-0**
+**Game 2: Alex (human) - Deep Crimson (depth 3 ply), 1-0**
 ```
 1. b3 Nf6 2. f3 e6 3. h4 Ng8 4. d4 Nc6 5. e3 Nb4 6. h5 d6 7. Ba3 a5 8.
 Nc3 Ra7 9. Bb5+ c6 10. Rh4 Qxh4+ 11. g3 Qxh5 12. Bxc6+ bxc6 13. Nce2 Qd5 14. Rb1
@@ -345,10 +345,16 @@ test accuracy: 0.6000
 time per evaluation: 0.0004 s/move (2,500 moves/s)
 ```
 
-**Game 1: Chaidhat (human) - Deep Crimson (depth 3)
+**Game 3: Chaidhat (human) - Deep Crimson (depth 3 ply)
 ```
 1. e4 Nf6 2. Nc3 c6 3. d4 Qa5 4. Bd3 d6 5. Nf3 Bg4 6. O-O Bxf3 7. Qxf3 Qb4 8. e5 Qxd4 9. exf6 Qxf6 10. Qxf6 exf6 11. Re1+ 
 ```
 Deep Crimson suggests a7->a6, an illegal move.
 
 Not bad, although due to the illegal move situation, it might be a good idea to fix that.
+
+**Game 4: Mark (human) - Deep Crimson (depth 3 ply)
+```
+1. d4 d5 2. Nf3 Bf5 3. e3 Nc6 4. Nc3 e6 5. h3 b6 6. g4 Bg6 7. Bd3 Bb4 8. Ne5 Nxe5 9. dxe5 Bxc3+ 10. bxc3 a6 11. h4 Bxd3 12. cxd3 Kf8 13. Ba3+ c5 14. h5
+```
+Game 4 is after the illegal move situation has been fixed. It is signifcantly better now. However, its performance dropped from 2,500 moves/s to only 1,700 moves/s (32% decrease) for depth 3 ply.

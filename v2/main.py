@@ -75,7 +75,19 @@ def find_all_moves(board, is_white_to_move, depth):
     global moves_attr
 
     possible_moves = chess.find_possible_moves(board, is_white_to_move)
-    scenarios = chess.generate_boards_from_moves(board, possible_moves)
+    if possible_moves == "checkmate" or possible_moves == "stalemate":
+        scenario = {}
+        scenario["children"] = []
+        if possible_moves == "checkmate":
+            if is_white_to_move:
+                scenario["special"] = "white checkmated"
+            else:
+                scenario["special"] = "black checkmated"
+        else:
+            scenario["special"] = "stalemate"
+        return [scenario]
+    else:
+        scenarios = chess.generate_boards_from_moves(board, possible_moves)
 
     for scenario in scenarios:
         # format the board and set to hash table
@@ -109,20 +121,34 @@ def min_max(scenarios, is_white_to_move, depth):
     final_scenarios = []
 
     for scenario in scenarios:
+        if "special" in scenario.keys():
+            scenario["move"] = scenario["special"]
+            if scenario["special"] == "white checkmated":
+                scenario["prediction"] = -100000
+            elif scenario["special"] == "black checkmated":
+                scenario["prediction"] = 100000
+            elif scenario["special"] == "stalemate":
+                scenario["prediction"] = 0
+
         if depth == 0:
-            scenario["prediction"] = moves_eval[scenario["board_hash_idx"]]
+            if not "special" in scenario.keys():
+                scenario["prediction"] = moves_eval[scenario["board_hash_idx"]]
+
             scenario["move_sequence"] = [scenario["move"]]
             final_scenarios.append(scenario)
         else:
             # recursively min-max
-            final_scenario = min_max(scenario["children"], not is_white_to_move, depth - 1)
-            if not final_scenario == 0:
-                final_scenario["move_sequence"].append(scenario["move"])
-                final_scenarios.append(final_scenario)
+            if not len(scenario["children"]) == 0:
+                final_scenario = min_max(scenario["children"], not is_white_to_move, depth - 1)
+            else: # no children exist
+                final_scenario = scenario
 
-    # sort from most favourable to least favourable
-    if len(final_scenarios) == 0:
-        return 0
+            if not "move_sequence" in final_scenario.keys():
+                scenario["move_sequence"] = []
+
+            final_scenario["move_sequence"].append(scenario["move"])
+            final_scenarios.append(final_scenario)
+
     final_scenarios_sorted = sorted(final_scenarios, key=itemgetter('prediction'), reverse= is_white_to_move) 
     final_scenario = final_scenarios_sorted[0]
     return final_scenario
@@ -149,10 +175,12 @@ def find_best_move(board, is_white_to_move, max_depth):
     eval_time = timer()
     print("eval time:\t", f'{eval_time - search_time:.3}', "s")
     best_scenario = min_max(final_scenarios, is_white_to_move, max_depth)
+    if best_scenario == 0:
+        print("checkmate")
     minmax_time = timer()
     print("minmax time:\t", f'{minmax_time - eval_time:.3}', "s")
     print("total time:\t", f'{eval_time - starttime:.3}', "s")
-    print("time per eval:\t", f'{(eval_time - starttime) / len(moves_board):.3}', "s/move")
+    print("performance:\t", len(moves_board) / (eval_time - starttime), "moves/s")
     return best_scenario
 
 model = train.create_model()
@@ -193,9 +221,14 @@ while True:
     print("")
     print("BEST MOVE:")
     for best_move in best_move_seq:
-        move_from = best_move["from"]
-        move_to = best_move["to"]
-        print(chess.coord_to_human(move_from), "->", chess.coord_to_human(move_to))
+        if (best_move == "white checkmated" 
+        or best_move == "black checkmated" 
+        or best_move == "stalemate"):
+            print(best_move)
+        else:
+            move_from = best_move["from"]
+            move_to = best_move["to"]
+            print(chess.coord_to_human(move_from), "->", chess.coord_to_human(move_to))
 
     print("\n\n")
 

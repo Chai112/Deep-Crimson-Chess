@@ -65,6 +65,7 @@ def is_king_in_check(board, is_white_to_move):
                 return True, opponents_possible_moves
         return False, opponents_possible_moves
     else:
+        print(board)
         print("No king is present on the board")
         exit()
 
@@ -296,14 +297,8 @@ def find_possible_moves(board, is_white_to_move, check_for_checks = True):
                 for i in range(3):
                     for j in range(3):
                         if not (i == 1 and j == 1):
-                            legal_move = True
-                            if check_for_checks:
-                                for move in opponents_possible_moves:
-                                    if move["move"]["to"] == (y - 1 + j, x - 1 + i):
-                                        legal_move = False
-                            if legal_move:
-                                if moveable_at(board, (y - 1 + j, x - 1 + i), is_white_to_move):
-                                    add_move(possible_moves, (y, x), (y - 1 + j, x - 1 + i))
+                            if moveable_at(board, (y - 1 + j, x - 1 + i), is_white_to_move):
+                                add_move(possible_moves, (y, x), (y - 1 + j, x - 1 + i))
 
                 # check castling position
                 if (is_white_to_move and x == 4 and y == 7) or (not is_white_to_move and x == 4 and y == 0):
@@ -350,7 +345,7 @@ def find_possible_moves(board, is_white_to_move, check_for_checks = True):
         
     # check if moves are legal => only a concern if King is in check
     #print("is king in check?", king_in_check)
-    if king_in_check:
+    if check_for_checks:
         scenarios = generate_boards_from_moves(board, possible_moves_final)
         possible_moves_final = []
         for scenario in scenarios:
@@ -358,12 +353,13 @@ def find_possible_moves(board, is_white_to_move, check_for_checks = True):
             if not king_still_in_check:
                 #print(coord_to_human(scenario["move"]["from"]), "->", coord_to_human(scenario["move"]["to"]))
                 possible_moves_final.append({"move": {"from": scenario["move"]["from"], "to": scenario["move"]["to"]}})
-
-
-
-    return possible_moves_final
-
-
+    
+    # check for checkmate
+    if len(possible_moves_final) == 0:
+        if king_in_check:
+            return "checkmate"
+        else:
+            return "stalemate"
 
     return possible_moves_final
 
